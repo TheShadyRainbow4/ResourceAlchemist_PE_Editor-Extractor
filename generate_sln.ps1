@@ -80,12 +80,14 @@ $vcxprojCLI = @'
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
+    <MinimumRequiredVersion>6.00</MinimumRequiredVersion>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
+    <MinimumRequiredVersion>6.00</MinimumRequiredVersion>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -93,12 +95,14 @@ $vcxprojCLI = @'
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
+    <MinimumRequiredVersion>6.00</MinimumRequiredVersion>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
+    <MinimumRequiredVersion>6.00</MinimumRequiredVersion>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -180,3 +184,5 @@ $vcxprojGUI | Out-File -FilePath "C:\Users\Administrator\Desktop\Resource_Alchem
 
 $vcxprojExt = $vcxprojCLI -replace "ResourceAlchemyHackerCLI", "ResourceAlchemyHackerShellExt" -replace "11111111-1111-1111-1111-111111111111", "33333333-3333-3333-3333-333333333333" -replace "Application", "DynamicLibrary" -replace "Console", "Windows" -replace "_CONSOLE", "_WINDOWS;_USRDLL;SHELLEXT_EXPORTS"
 $vcxprojExt | Out-File -FilePath "C:\Users\Administrator\Desktop\Resource_Alchemy_Hacker\ResourceAlchemyHacker\ResourceAlchemyHacker_ShellExt\ResourceAlchemyHacker_ShellExt.vcxproj" -Encoding UTF8
+
+

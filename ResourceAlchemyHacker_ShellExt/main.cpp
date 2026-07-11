@@ -1,6 +1,8 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <unknwn.h>
+#include <shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
 #include <string>
 
 // Global DLL reference count
@@ -157,3 +159,5 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     }
     return TRUE;
 }
+
+
