@@ -4,9 +4,17 @@
 #include <shlwapi.h>
 #pragma comment(lib, "shlwapi.lib")
 #include <string>
+#include <vector>
+#include <olectl.h>
+
+// #pragma comment(linker, "/EXPORT:DllGetClassObject,PRIVATE")
+// #pragma comment(linker, "/EXPORT:DllCanUnloadNow,PRIVATE")
+// #pragma comment(linker, "/EXPORT:DllRegisterServer,PRIVATE")
+// #pragma comment(linker, "/EXPORT:DllUnregisterServer,PRIVATE")
 
 // Global DLL reference count
 long g_cRefThisDll = 0;
+HINSTANCE g_hInst = NULL;
 
 // Unique GUID for the new Resource Alchemy Hacker Shell Extension
 // {A1B2C3D4-E5F6-7890-1234-567890ABCDEF}
@@ -74,9 +82,29 @@ public:
     }
     
     IFACEMETHODIMP InvokeCommand(CMINVOKECOMMANDINFO *pici) {
-        // Here we would launch the GUI passing m_szSelectedFile
-        MessageBoxW(pici->hwnd, m_szSelectedFile.c_str(), L"Resource Alchemy Hacker", MB_OK);
-        return S_OK;
+        wchar_t szDllPath[MAX_PATH];
+        if (GetModuleFileNameW(g_hInst, szDllPath, ARRAYSIZE(szDllPath)) == 0) {
+            return E_FAIL;
+        }
+
+        PathRemoveFileSpecW(szDllPath);
+
+        std::wstring guiPath = std::wstring(szDllPath) + L"\\ResourceAlchemyHacker_GUI.exe";
+        std::wstring cmdLine = L"\"" + guiPath + L"\" \"" + m_szSelectedFile + L"\"";
+        
+        std::vector<wchar_t> cmdLineBuf(cmdLine.begin(), cmdLine.end());
+        cmdLineBuf.push_back(L'\0');
+
+        STARTUPINFOW si = { sizeof(si) };
+        PROCESS_INFORMATION pi = { 0 };
+
+        if (CreateProcessW(NULL, cmdLineBuf.data(), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+            CloseHandle(pi.hProcess);
+            CloseHandle(pi.hThread);
+            return S_OK;
+        }
+        
+        return E_FAIL;
     }
     
     IFACEMETHODIMP GetCommandString(UINT_PTR idCmd, UINT uType, UINT *pReserved, LPSTR pszName, UINT cchMax) {
@@ -154,10 +182,79 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
+        g_hInst = hModule;
         DisableThreadLibraryCalls(hModule);
         break;
     }
     return TRUE;
+}
+
+BOOL SetRegKeyValue(HKEY hKeyParent, const wchar_t* subKey, const wchar_t* valueName, const wchar_t* data) {
+    HKEY hKey;
+    LONG result = RegCreateKeyExW(hKeyParent, subKey, 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hKey, NULL);
+    if (result != ERROR_SUCCESS) return FALSE;
+    result = RegSetValueExW(hKey, valueName, 0, REG_SZ, (BYTE*)data, (DWORD)(wcslen(data) + 1) * sizeof(wchar_t));
+    RegCloseKey(hKey);
+    return (result == ERROR_SUCCESS);
+}
+
+BOOL DeleteRegKey(HKEY hKeyParent, const wchar_t* subKey) {
+    if (RegDeleteKeyW(hKeyParent, subKey) == ERROR_SUCCESS) {
+        return TRUE;
+    }
+    return (RegDeleteTreeW(hKeyParent, subKey) == ERROR_SUCCESS);
+}
+
+STDAPI DllRegisterServer(void) {
+    wchar_t szModule[MAX_PATH];
+    if (GetModuleFileNameW(g_hInst, szModule, ARRAYSIZE(szModule)) == 0) {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    const wchar_t* clsidStr = L"{A1B2C3D4-E5F6-7890-1234-567890ABCDEF}";
+    std::wstring clsidKey = std::wstring(L"CLSID\\") + clsidStr;
+    std::wstring inprocKey = clsidKey + L"\\InprocServer32";
+
+    if (!SetRegKeyValue(HKEY_CLASSES_ROOT, clsidKey.c_str(), NULL, L"Resource Alchemy Hacker Shell Extension")) {
+        return SELFREG_E_CLASS;
+    }
+    if (!SetRegKeyValue(HKEY_CLASSES_ROOT, inprocKey.c_str(), NULL, szModule)) {
+        return SELFREG_E_CLASS;
+    }
+    if (!SetRegKeyValue(HKEY_CLASSES_ROOT, inprocKey.c_str(), L"ThreadingModel", L"Apartment")) {
+        return SELFREG_E_CLASS;
+    }
+
+    // Context Menu Handlers
+    if (!SetRegKeyValue(HKEY_CLASSES_ROOT, L"*\\shellex\\ContextMenuHandlers\\ResourceAlchemyHacker", NULL, clsidStr)) {
+        return SELFREG_E_CLASS;
+    }
+    if (!SetRegKeyValue(HKEY_CLASSES_ROOT, L"exefile\\shellex\\ContextMenuHandlers\\ResourceAlchemyHacker", NULL, clsidStr)) {
+        return SELFREG_E_CLASS;
+    }
+
+    // Property Sheet Handlers
+    if (!SetRegKeyValue(HKEY_CLASSES_ROOT, L"*\\shellex\\PropertySheetHandlers\\ResourceAlchemyHacker", NULL, clsidStr)) {
+        return SELFREG_E_CLASS;
+    }
+    if (!SetRegKeyValue(HKEY_CLASSES_ROOT, L"exefile\\shellex\\PropertySheetHandlers\\ResourceAlchemyHacker", NULL, clsidStr)) {
+        return SELFREG_E_CLASS;
+    }
+
+    return S_OK;
+}
+
+STDAPI DllUnregisterServer(void) {
+    const wchar_t* clsidStr = L"{A1B2C3D4-E5F6-7890-1234-567890ABCDEF}";
+    std::wstring clsidKey = std::wstring(L"CLSID\\") + clsidStr;
+
+    DeleteRegKey(HKEY_CLASSES_ROOT, clsidKey.c_str());
+    DeleteRegKey(HKEY_CLASSES_ROOT, L"*\\shellex\\ContextMenuHandlers\\ResourceAlchemyHacker");
+    DeleteRegKey(HKEY_CLASSES_ROOT, L"exefile\\shellex\\ContextMenuHandlers\\ResourceAlchemyHacker");
+    DeleteRegKey(HKEY_CLASSES_ROOT, L"*\\shellex\\PropertySheetHandlers\\ResourceAlchemyHacker");
+    DeleteRegKey(HKEY_CLASSES_ROOT, L"exefile\\shellex\\PropertySheetHandlers\\ResourceAlchemyHacker");
+
+    return S_OK;
 }
 
 

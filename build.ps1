@@ -1,20 +1,39 @@
-$vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+$vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
 if (-not $vsPath) {
     Write-Error "Visual Studio not found."
     exit 1
 }
 
-$vcvars = "$vsPath\VC\Auxiliary\Build\vcvarsall.bat"
-if (-not (Test-Path $vcvars)) {
-    Write-Error "vcvarsall.bat not found at $vcvars"
+$msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+if (-not $msbuild) {
+    Write-Error "MSBuild not found."
     exit 1
 }
 
-$buildCmd = @"
-call "$vcvars" x64
-cd ResourceAlchemyHacker_CLI
-cl.exe /EHsc /MD /O2 /Fe"ResourceAlchemyHacker_CLI.exe" main.cpp User32.lib
-"@
+& $msbuild ResourceAlchemyHacker.sln /p:Configuration=Release /p:Platform=x64
 
-$buildCmd | Out-File "build.bat" -Encoding ASCII
-cmd.exe /c build.bat
+
+$signtool = ".\SignTool\signtool.exe"
+$pfx = ".\SignTool\EliteSoftware_Special.pfx"
+$pass = "Minecraft145!!"
+
+Write-Host "Signing executable binaries..."
+& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\x64\Release\ResourceAlchemyHacker_CLI.exe"
+& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\x64\Release\ResourceAlchemyHacker_GUI.exe"
+& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\x64\Release\ResourceAlchemyHacker_ShellExt.dll"
+
+# Sync version numbers
+$versionContent = Get-Content -Path "version.h" -Raw
+if ($versionContent -match '#define RAH_VERSION_ANSI "(.*)"') {
+    $appVersion = $matches[1]
+    (Get-Content -Path "Installer\setup.iss") -replace "^AppVersion=.*", "AppVersion=$appVersion" -replace "^OutputBaseFilename=.*", "OutputBaseFilename=ResourceAlchemyHacker_Installer_$appVersion" | Set-Content -Path "Installer\setup.iss"
+    (Get-Content -Path "README.md") -replace "## Features \(v.* Update\)", "## Features (v$appVersion Update)" | Set-Content -Path "README.md"
+}
+
+& "S:\Projects\Inno Setup 6\iscc.exe" "Installer\setup.iss"
+
+
+Write-Host "Signing Installer..."
+& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\Installer\ResourceAlchemyHacker_Installer_1.4.0.0.exe"
+
+

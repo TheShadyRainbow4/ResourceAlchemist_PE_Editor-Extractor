@@ -63,6 +63,7 @@ void LogWin32Error(const wstring& context, DWORD errCode = GetLastError()) {
         case ERROR_SHARING_VIOLATION: witty = L"The file is currently being held hostage by another process. Kill it and try again."; break;
         case ERROR_FILE_NOT_FOUND: witty = L"File not found. Did it vanish into the void, or did you make a typo?"; break;
         case ERROR_RESOURCE_DATA_NOT_FOUND: witty = L"Resource not found. You're hunting ghosts in this binary."; break;
+        case ERROR_NOT_SUPPORTED: witty = L"Windows API blocked the update (Error 50). This usually happens when editing MUI/MUN separated files like imageres.dll. Try targeting the .mun file directly!"; break;
         default: witty = L"A technical anomaly occurred. Blame the gremlins."; break;
     }
     
@@ -190,11 +191,11 @@ void DoExtract(const wstring& target, const wstring& typeStr, const wstring& nam
     }
 
     if (typeStr.find(L"#") == 0) type = MAKEINTRESOURCEW(_wtoi(typeStr.c_str() + 1));
-    else if (_wtoi(typeStr.c_str()) != 0) type = MAKEINTRESOURCEW(_wtoi(typeStr.c_str()));
+    else if (!typeStr.empty() && typeStr.find_first_not_of(L"0123456789") == std::wstring::npos) type = MAKEINTRESOURCEW(_wtoi(typeStr.c_str()));
 
     LPCWSTR name = nameStr.c_str();
     if (nameStr.find(L"#") == 0) name = MAKEINTRESOURCEW(_wtoi(nameStr.c_str() + 1));
-    else if (_wtoi(nameStr.c_str()) != 0) name = MAKEINTRESOURCEW(_wtoi(nameStr.c_str()));
+    else if (!nameStr.empty() && nameStr.find_first_not_of(L"0123456789") == std::wstring::npos) name = MAKEINTRESOURCEW(_wtoi(nameStr.c_str()));
 
     HRSRC hRes = FindResourceExW(hMod, type, name, lang);
     if (!hRes) {
@@ -242,9 +243,178 @@ void BackupFile(const wstring& target) {
     }
 }
 
+struct EnumGroupCtx {
+    LPCWSTR targetName;
+    WORD lang;
+    vector<WORD> oldSubIconIds;
+    vector<WORD> otherSubIconIds;
+};
+
+BOOL CALLBACK EnumGroupIconsProc(HMODULE hModule, LPCWSTR lpszType, LPWSTR lpszName, LONG_PTR lParam) {
+    EnumGroupCtx* ctx = (EnumGroupCtx*)lParam;
+    HRSRC hResGroup = FindResourceExW(hModule, RT_GROUP_ICON, lpszName, ctx->lang);
+    if (!hResGroup) {
+        hResGroup = FindResourceW(hModule, lpszName, RT_GROUP_ICON);
+    }
+    if (hResGroup) {
+        HGLOBAL hMem = LoadResource(hModule, hResGroup);
+        void* pGroup = LockResource(hMem);
+        if (pGroup) {
+            ICONDIR* pGrpDir = (ICONDIR*)pGroup;
+            GRPICONDIRENTRY* pGrpEntries = (GRPICONDIRENTRY*)((BYTE*)pGroup + sizeof(ICONDIR));
+            
+            bool isTarget = false;
+            if (IS_INTRESOURCE(lpszName) && IS_INTRESOURCE(ctx->targetName)) {
+                isTarget = ((USHORT)(ULONG_PTR)lpszName == (USHORT)(ULONG_PTR)ctx->targetName);
+            } else if (!IS_INTRESOURCE(lpszName) && !IS_INTRESOURCE(ctx->targetName)) {
+                isTarget = (_wcsicmp(lpszName, ctx->targetName) == 0);
+            }
+            
+            for (int i = 0; i < pGrpDir->idCount; ++i) {
+                if (isTarget) {
+                    ctx->oldSubIconIds.push_back(pGrpEntries[i].nId);
+                } else {
+                    ctx->otherSubIconIds.push_back(pGrpEntries[i].nId);
+                }
+            }
+        }
+    }
+    return TRUE;
+}
+
+bool ReplaceIconGroup(const wstring& target, LPCWSTR name, WORD lang, const wstring& icoPath) {
+    EnumGroupCtx ctx;
+    ctx.targetName = name;
+    ctx.lang = lang;
+    
+    HMODULE hMod = LoadLibraryExW(target.c_str(), NULL, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
+    if (hMod) {
+        EnumResourceNamesW(hMod, RT_GROUP_ICON, EnumGroupIconsProc, (LONG_PTR)&ctx);
+        FreeLibrary(hMod);
+    }
+    
+    ifstream icoFile(icoPath, ios::binary);
+    if (!icoFile) {
+        EliteLog(L"ReplaceIconGroup: Failed to open ICO file " + icoPath);
+        return false;
+    }
+    
+    ICONDIR header;
+    if (!icoFile.read((char*)&header, sizeof(ICONDIR))) {
+        EliteLog(L"ReplaceIconGroup: Failed to read ICO header");
+        return false;
+    }
+    
+    if (header.idType != 1) {
+        EliteLog(L"ReplaceIconGroup: Invalid ICO type");
+        return false;
+    }
+    
+    vector<ICONDIRENTRY> entries(header.idCount);
+    if (!icoFile.read((char*)entries.data(), header.idCount * sizeof(ICONDIRENTRY))) {
+        EliteLog(L"ReplaceIconGroup: Failed to read ICO entries");
+        return false;
+    }
+    
+    vector<vector<char>> iconImages(header.idCount);
+    for (int i = 0; i < header.idCount; ++i) {
+        icoFile.seekg(entries[i].dwImageOffset, ios::beg);
+        iconImages[i].resize(entries[i].dwBytesInRes);
+        if (!icoFile.read(iconImages[i].data(), entries[i].dwBytesInRes)) {
+            EliteLog(L"ReplaceIconGroup: Failed to read icon image data for entry " + to_wstring(i));
+            return false;
+        }
+    }
+    icoFile.close();
+    
+    vector<WORD> newSubIconIds;
+    WORD candidateId = 1;
+    for (int i = 0; i < header.idCount; ++i) {
+        while (true) {
+            bool clash = false;
+            for (WORD otherId : ctx.otherSubIconIds) {
+                if (otherId == candidateId) {
+                    clash = true;
+                    break;
+                }
+            }
+            if (!clash) {
+                newSubIconIds.push_back(candidateId);
+                ctx.otherSubIconIds.push_back(candidateId);
+                candidateId++;
+                break;
+            }
+            candidateId++;
+        }
+    }
+    
+    HANDLE hUpdate = BeginUpdateResourceW(target.c_str(), FALSE);
+    if (!hUpdate) {
+        LogWin32Error(L"ReplaceIconGroup: BeginUpdateResourceW failed");
+        return false;
+    }
+    
+    for (WORD oldId : ctx.oldSubIconIds) {
+        UpdateResourceW(hUpdate, RT_ICON, MAKEINTRESOURCEW(oldId), lang, NULL, 0);
+    }
+    
+    for (int i = 0; i < header.idCount; ++i) {
+        WORD newId = newSubIconIds[i];
+        if (!UpdateResourceW(hUpdate, RT_ICON, MAKEINTRESOURCEW(newId), lang, iconImages[i].data(), (DWORD)iconImages[i].size())) {
+            LogWin32Error(L"ReplaceIconGroup: Failed to write new sub-icon ID " + to_wstring(newId));
+            EndUpdateResourceW(hUpdate, TRUE);
+            return false;
+        }
+    }
+    
+    vector<char> groupDirectoryBuffer(sizeof(ICONDIR) + header.idCount * sizeof(GRPICONDIRENTRY));
+    ICONDIR* pOutDir = (ICONDIR*)groupDirectoryBuffer.data();
+    pOutDir->idReserved = header.idReserved;
+    pOutDir->idType = header.idType;
+    pOutDir->idCount = header.idCount;
+    
+    GRPICONDIRENTRY* pOutEntries = (GRPICONDIRENTRY*)(groupDirectoryBuffer.data() + sizeof(ICONDIR));
+    for (int i = 0; i < header.idCount; ++i) {
+        pOutEntries[i].bWidth = entries[i].bWidth;
+        pOutEntries[i].bHeight = entries[i].bHeight;
+        pOutEntries[i].bColorCount = entries[i].bColorCount;
+        pOutEntries[i].bReserved = entries[i].bReserved;
+        pOutEntries[i].wPlanes = entries[i].wPlanes;
+        pOutEntries[i].wBitCount = entries[i].wBitCount;
+        pOutEntries[i].dwBytesInRes = entries[i].dwBytesInRes;
+        pOutEntries[i].nId = newSubIconIds[i];
+    }
+    
+    if (!UpdateResourceW(hUpdate, RT_GROUP_ICON, name, lang, groupDirectoryBuffer.data(), (DWORD)groupDirectoryBuffer.size())) {
+        LogWin32Error(L"ReplaceIconGroup: Failed to write new RT_GROUP_ICON directory");
+        EndUpdateResourceW(hUpdate, TRUE);
+        return false;
+    }
+    
+    if (!EndUpdateResourceW(hUpdate, FALSE)) {
+        LogWin32Error(L"ReplaceIconGroup: EndUpdateResourceW failed to commit changes");
+        return false;
+    }
+    
+    EliteLog(L"ReplaceIconGroup: Successfully replaced icon group with " + to_wstring(header.idCount) + L" sub-icons.");
+    return true;
+}
+
 void DoReplace(const wstring& target, const wstring& typeStr, const wstring& nameStr, WORD lang, const wstring& inPath) {
     EliteLog(L"Replacing resource in " + target);
     BackupFile(target);
+
+    if (typeStr == L"14" || typeStr.find(L"RT_GROUP_ICON") != wstring::npos) {
+        LPCWSTR name = nameStr.c_str();
+        if (nameStr.find(L"#") == 0) name = MAKEINTRESOURCEW(_wtoi(nameStr.c_str() + 1));
+        else if (!nameStr.empty() && nameStr.find_first_not_of(L"0123456789") == std::wstring::npos) name = MAKEINTRESOURCEW(_wtoi(nameStr.c_str()));
+        
+        if (ReplaceIconGroup(target, name, lang, inPath)) {
+            return;
+        } else {
+            EliteLog(L"Icon replacement failed. Falling back to default resource replacement.");
+        }
+    }
 
     HANDLE hUpdate = BeginUpdateResourceW(target.c_str(), FALSE);
     if (!hUpdate) {
@@ -264,18 +434,12 @@ void DoReplace(const wstring& target, const wstring& typeStr, const wstring& nam
     in.read(buffer.data(), size);
 
     LPCWSTR type = typeStr.c_str();
-    if (typeStr == L"14" || typeStr.find(L"RT_GROUP_ICON") != wstring::npos) {
-        // Icon Deconstruction logic required here. For now, simple standard replace.
-        // TODO: Full ICO deconstruction into RT_ICON and RT_GROUP_ICON
-        EliteLog(L"Injecting pre-processed RT_GROUP_ICON or raw payload");
-    }
-
     if (typeStr.find(L"#") == 0) type = MAKEINTRESOURCEW(_wtoi(typeStr.c_str() + 1));
-    else if (_wtoi(typeStr.c_str()) != 0) type = MAKEINTRESOURCEW(_wtoi(typeStr.c_str()));
+    else if (!typeStr.empty() && typeStr.find_first_not_of(L"0123456789") == std::wstring::npos) type = MAKEINTRESOURCEW(_wtoi(typeStr.c_str()));
 
     LPCWSTR name = nameStr.c_str();
     if (nameStr.find(L"#") == 0) name = MAKEINTRESOURCEW(_wtoi(nameStr.c_str() + 1));
-    else if (_wtoi(nameStr.c_str()) != 0) name = MAKEINTRESOURCEW(_wtoi(nameStr.c_str()));
+    else if (!nameStr.empty() && nameStr.find_first_not_of(L"0123456789") == std::wstring::npos) name = MAKEINTRESOURCEW(_wtoi(nameStr.c_str()));
 
     if (!UpdateResourceW(hUpdate, type, name, lang, buffer.data(), (DWORD)size)) {
         LogWin32Error(L"UpdateResourceW failed");
@@ -288,6 +452,90 @@ void DoReplace(const wstring& target, const wstring& typeStr, const wstring& nam
         return;
     }
     EliteLog(L"Successfully replaced resource.");
+}
+
+void DoDelete(const wstring& target, const wstring& typeStr, const wstring& nameStr, WORD lang) {
+    EliteLog(L"Deleting resource in " + target);
+    BackupFile(target);
+
+    HANDLE hUpdate = BeginUpdateResourceW(target.c_str(), FALSE);
+    if (!hUpdate) {
+        LogWin32Error(L"BeginUpdateResourceW failed");
+        return;
+    }
+
+    LPCWSTR type = typeStr.c_str();
+    if (typeStr.find(L"#") == 0) type = MAKEINTRESOURCEW(_wtoi(typeStr.c_str() + 1));
+    else if (!typeStr.empty() && typeStr.find_first_not_of(L"0123456789") == std::wstring::npos) type = MAKEINTRESOURCEW(_wtoi(typeStr.c_str()));
+
+    LPCWSTR name = nameStr.c_str();
+    if (nameStr.find(L"#") == 0) name = MAKEINTRESOURCEW(_wtoi(nameStr.c_str() + 1));
+    else if (!nameStr.empty() && nameStr.find_first_not_of(L"0123456789") == std::wstring::npos) name = MAKEINTRESOURCEW(_wtoi(nameStr.c_str()));
+
+    if (!UpdateResourceW(hUpdate, type, name, lang, NULL, 0)) {
+        LogWin32Error(L"UpdateResourceW failed to delete");
+        EndUpdateResourceW(hUpdate, TRUE);
+        return;
+    }
+
+    if (!EndUpdateResourceW(hUpdate, FALSE)) {
+        LogWin32Error(L"EndUpdateResourceW failed to commit changes");
+        return;
+    }
+    EliteLog(L"Successfully deleted resource.");
+}
+
+BOOL CALLBACK FlattenEnumLangProc(HMODULE hMod, LPCWSTR lpszType, LPCWSTR lpszName, WORD wIDLanguage, LONG_PTR lParam) {
+    HANDLE hUpdate = (HANDLE)lParam;
+    HRSRC hRes = FindResourceExW(hMod, lpszType, lpszName, wIDLanguage);
+    if (hRes) {
+        HGLOBAL hGlob = LoadResource(hMod, hRes);
+        if (hGlob) {
+            void* data = LockResource(hGlob);
+            DWORD size = SizeofResource(hMod, hRes);
+            if (data && size > 0) {
+                UpdateResourceW(hUpdate, lpszType, lpszName, wIDLanguage, data, size);
+            }
+        }
+    }
+    return TRUE;
+}
+
+BOOL CALLBACK FlattenEnumNameProc(HMODULE hMod, LPCWSTR lpszType, LPWSTR lpszName, LONG_PTR lParam) {
+    EnumResourceLanguagesW(hMod, lpszType, lpszName, FlattenEnumLangProc, lParam);
+    return TRUE;
+}
+
+BOOL CALLBACK FlattenEnumTypeProc(HMODULE hMod, LPWSTR lpszType, LONG_PTR lParam) {
+    EnumResourceNamesW(hMod, lpszType, FlattenEnumNameProc, lParam);
+    return TRUE;
+}
+
+void DoFlatten(const wstring& target_base, const wstring& target_mun, const wstring& target_mui) {
+    EliteLog(L"Flattening resources from MUN and MUI into " + target_base);
+    HANDLE hUpdate = BeginUpdateResourceW(target_base.c_str(), FALSE);
+    if (!hUpdate) {
+        LogWin32Error(L"BeginUpdateResourceW failed in DoFlatten");
+        return;
+    }
+    
+    auto copyResources = [&](const wstring& src) {
+        if (src == L"NONE" || src.empty()) return;
+        HMODULE hMod = LoadLibraryExW(src.c_str(), NULL, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
+        if (hMod) {
+            EnumResourceTypesW(hMod, FlattenEnumTypeProc, (LONG_PTR)hUpdate);
+            FreeLibrary(hMod);
+        }
+    };
+    
+    copyResources(target_mun);
+    copyResources(target_mui);
+    
+    if (!EndUpdateResourceW(hUpdate, FALSE)) {
+        LogWin32Error(L"EndUpdateResourceW failed in DoFlatten");
+    } else {
+        EliteLog(L"Successfully flattened resources into monolithic binary.");
+    }
 }
 
 int wmain(int argc, wchar_t* argv[]) {
@@ -305,9 +553,15 @@ int wmain(int argc, wchar_t* argv[]) {
     } else if (action == L"/extract" && argc >= 7) {
         // /extract target type name lang outpath
         DoExtract(target, argv[3], argv[4], (WORD)_wtoi(argv[5]), argv[6]);
-    } else if (action == L"/replace" && argc >= 7) {
+    } else if ((action == L"/replace" || action == L"/add") && argc >= 7) {
         // /replace target type name lang inpath
         DoReplace(target, argv[3], argv[4], (WORD)_wtoi(argv[5]), argv[6]);
+    } else if (action == L"/delete" && argc >= 6) {
+        // /delete target type name lang
+        DoDelete(target, argv[3], argv[4], (WORD)_wtoi(argv[5]));
+    } else if (action == L"/flatten" && argc >= 5) {
+        // /flatten target_base target_mun target_mui
+        DoFlatten(target, argv[3], argv[4]);
     } else {
         EliteLog(L"Invalid arguments provided.");
         return 2;
@@ -315,3 +569,4 @@ int wmain(int argc, wchar_t* argv[]) {
 
     return 0;
 }
+
