@@ -1,0 +1,116 @@
+<html><head><style>body{font-family:Segoe UI, sans-serif; margin: 2em; line-height: 1.6;} h1, h2, h3{color:#003366;} hr{margin-top:2em;margin-bottom:2em;}</style></head><body><h1 id="resource-alchemy-hacker">Resource Alchemy Hacker</h1>
+<p>EliteSoftwareTech Co. - Antigravity Suite</p>
+<h2 id="description">Description</h2>
+<p>Resource Alchemy Hacker is a native C++ application for viewing, extracting, and replacing resources in Windows executables (PE files).
+It serves as a modernized clone of Resource Hacker and includes three main components:</p>
+<ol>
+<li><strong>CLI Engine (<code>ResourceAlchemyHacker_CLI</code>)</strong>: The backend worker executable that performs all resource extraction and injection using Win32 API.</li>
+<li><strong>GUI Application (<code>ResourceAlchemyHacker_GUI</code>)</strong>: The frontend Win32 application adhering to EliteSoftware GUI guidelines (Native Win32 aesthetics, Client Edge, Chin, 3D inset, etc.).</li>
+<li><strong>Shell Extension (<code>ResourceAlchemyHacker_ShellExt</code>)</strong>: A native C++ COM Shell Extension. It provides:
+<ul>
+<li>Cascading context menus for quick extraction/viewing.</li>
+<li>A property sheet tab for executable files that lists resources (e.g., icons) like the native icon picker, and allows on-the-fly replacement of resources in system files (using backup renaming strategies).</li>
+</ul>
+</li>
+</ol>
+<h2 id="project-structure">Project Structure</h2>
+<ul>
+<li><code>/ResourceAlchemyHacker_CLI/</code> - Backend command line tool</li>
+<li><code>/ResourceAlchemyHacker_GUI/</code> - Main Win32 application</li>
+<li><code>/ResourceAlchemyHacker_ShellExt/</code> - COM Shell Extension (replaces old SharpShell implementation)</li>
+<li><code>/Installer/</code> - InnoSetup script for deployment</li>
+</ul>
+<h2 id="development-guidelines">Development Guidelines</h2>
+<ul>
+<li>Strictly follows EliteSoftwareTech Co. guidelines for native Win32/WinForms aesthetics.</li>
+<li>Visual Styles must always be explicitly enabled.</li>
+<li>Title banner and 3D Inset Area.</li>
+<li>Dynamic Icon Targeting.</li>
+</ul>
+<h2 id="features-v1.4.0.0-update">Features (v1.4.0.0 Update)</h2>
+<ul>
+<li><strong>Advanced Resource Previews:</strong>
+<ul>
+<li>Full Image rendering (Icons, Bitmaps, Cursors, Cursor Groups, Icon Groups).</li>
+<li>Native AVI and WAV audio playback seamlessly integrated into the GUI.</li>
+<li>Interactive Text Previews for Manifests, String Tables, Version Info, and Dialogs.</li>
+</ul>
+</li>
+<li><strong>Resource Replacement &amp; Extraction:</strong>
+<ul>
+<li>Intuitive &quot;Replace Resource&quot; dialog with side-by-side graphical previews of original and new resources.</li>
+<li>Seamless extraction and deletion of resources.</li>
+<li>Accelerated hotkeys (Ctrl+R) and Context Menu support within the TreeView.</li>
+</ul>
+</li>
+<li><strong>Enhanced UI &amp; Aesthetics:</strong>
+<ul>
+<li>Deep system-level icons dynamically loaded for all specific resource types in the TreeView (Audio, Images, XML, Manifests, Menus).</li>
+<li>Legacy horizontal scrollbars hidden for a cleaner look (<code>TVS_NOHSCROLL</code>).</li>
+<li>Strict adherence to EliteSoftwareTech Co. guidelines (Client Edge, 3D inset).</li>
+<li>Registry-based persistence of Window dimensions and settings across sessions.</li>
+</ul>
+</li>
+<li><strong>Full Menu Parity:</strong>
+<ul>
+<li>25+ classic Resource Hacker functions accessible via native Win32 dropdown menus (<code>File</code>, <code>Edit</code>, <code>View</code>, <code>Action</code>, <code>Help</code>).</li>
+</ul>
+</li>
+</ul>
+<h2 id="detailed-component-documentation">Detailed Component Documentation</h2>
+<h3 id="cli-engine-resourcealchemyhacker_cli">1. CLI Engine (<code>ResourceAlchemyHacker_CLI</code>)</h3>
+<p>The CLI is a headless command-line tool that performs resource modifications on PE files.
+It is designed to be called programmatically by scripts, build tools, or the GUI.</p>
+<p><strong>Syntax:</strong>
+<code>ResourceAlchemyHacker_CLI.exe &lt;action&gt; &lt;target_file&gt; [type] [name] [lang] [file]</code></p>
+<p><strong>Actions:</strong></p>
+<ul>
+<li><code>/list</code>: Outputs a structured listing of all resources in <code>&lt;target_file&gt;</code>.
+<ul>
+<li>Example: <code>ResourceAlchemyHacker_CLI.exe /list C:\app.exe</code></li>
+</ul>
+</li>
+<li><code>/extract</code>: Extracts a specific resource to an output file.
+<ul>
+<li>Example: <code>ResourceAlchemyHacker_CLI.exe /extract C:\app.exe #14 #1 1033 out.ico</code></li>
+</ul>
+</li>
+<li><code>/replace</code>: Replaces an existing resource with data from <code>&lt;file&gt;</code>.
+<ul>
+<li>Example: <code>ResourceAlchemyHacker_CLI.exe /replace C:\app.exe #14 #1 1033 new_icon.ico</code></li>
+</ul>
+</li>
+<li><code>/add</code>: Adds a new resource from <code>&lt;file&gt;</code>.
+<ul>
+<li>Example: <code>ResourceAlchemyHacker_CLI.exe /add C:\app.exe #2 #100 1033 image.bmp</code></li>
+</ul>
+</li>
+<li><code>/delete</code>: Deletes a specific resource.
+<ul>
+<li>Example: <code>ResourceAlchemyHacker_CLI.exe /delete C:\app.exe #2 #100 1033</code></li>
+</ul>
+</li>
+</ul>
+<p><em>Note: Types and Names can be strings (e.g. <code>ICON</code>) or integers prefixed with <code>#</code> (e.g. <code>#14</code> for RT_GROUP_ICON). Language should be a numeric LCID (e.g. 1033 for English-US).</em></p>
+<h3 id="shell-extension-resourcealchemyhacker_shellext">2. Shell Extension (<code>ResourceAlchemyHacker_ShellExt</code>)</h3>
+<p>The Shell Extension integrates Resource Alchemy Hacker directly into Windows Explorer using a native C++ COM implementation.</p>
+<ul>
+<li><strong>Context Menus:</strong> Right-clicking any PE file (.exe, .dll, .sys, etc.) provides quick shortcuts to Extract All Resources or Open in Resource Alchemy Hacker.</li>
+<li><strong>Property Sheet Tab:</strong> Right-clicking a PE file and selecting &quot;Properties&quot; displays a new &quot;Resources&quot; tab.
+<ul>
+<li>The tab lists resources in a graphical grid (similar to the Windows icon picker).</li>
+<li>Users can view and extract resources directly from the properties window without opening the full application.</li>
+</ul>
+</li>
+</ul>
+<h3 id="important-note-on-mui-and-mun-files">Important Note on MUI and MUN Files</h3>
+<p>Modern Windows (Vista and later) frequently uses Multilingual User Interface (MUI) files and MUN files (in <code>C:\Windows\SystemResources</code>) to store localized resources (like icons, strings, and dialogs) separate from the main binary.</p>
+<ul>
+<li>When opening a system DLL (e.g. <code>imageres.dll</code>), the GUI will display resources dynamically loaded from its associated <code>.mui</code> or <code>.mun</code> file.</li>
+<li><strong>Warning:</strong> Saving modifications to the original <code>.dll</code> file using this tool <strong>will only write to the <code>.dll</code></strong>. It will <strong>not</strong> modify the <code>.mui</code> or <code>.mun</code> file. Because of strict core Windows <code>UpdateResource</code> API limitations, attempting to modify an icon or resource on a &quot;stub&quot; DLL that forwards to an MUI/MUN file may fail with <strong>Error 50 (ERROR_NOT_SUPPORTED)</strong>.</li>
+<li><strong>Solution:</strong> To effectively modify system resources and avoid &quot;Error 50&quot;, you must explicitly open and edit the actual <code>.mun</code> or <code>.mui</code> file directly (e.g., <code>C:\Windows\SystemResources\imageres.dll.mun</code>), rather than attempting to edit the base stub DLL.</li>
+</ul>
+<h2 id="version">Version</h2>
+<p>Document Version: 1.3.1.0</p>
+<hr>
+</body></html>
