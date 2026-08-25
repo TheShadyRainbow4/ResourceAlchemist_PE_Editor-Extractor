@@ -23,7 +23,7 @@ It serves as a modernized clone of Resource Hacker and includes three main compo
 - Title banner and 3D Inset Area.
 - Dynamic Icon Targeting.
 
-## Features (v1.4.0.0 Update)
+## Features (v1.4.0.2 Update)
 - **Advanced Resource Previews:**
   - Full Image rendering (Icons, Bitmaps, Cursors, Cursor Groups, Icon Groups).
   - Native AVI and WAV audio playback seamlessly integrated into the GUI.

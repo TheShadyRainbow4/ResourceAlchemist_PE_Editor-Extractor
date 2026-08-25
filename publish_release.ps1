@@ -37,6 +37,6 @@ git commit -m "Auto-build and release v$AppVersion"
 git push -u origin master
 
 Write-Host "Creating GitHub Release..."
-gh release create "v$AppVersion" "$x64Zip" "$x86Zip" "Installer\ResourceAlchemyHacker_Installer_$().exe" "ResourceAlchemyHacker_Documentation.pdf" --title "Resource Alchemy Hacker v$AppVersion" --notes "Automated Build and Release v$AppVersion"
+gh release create "v$AppVersion" "$x64Zip" "$x86Zip" "Installer\ResourceAlchemyHacker_Installer_$($AppVersion).exe" "ResourceAlchemyHacker_Documentation.pdf" --title "Resource Alchemy Hacker v$AppVersion" --notes "Automated Build and Release v$AppVersion"
 
 Write-Host "Release publishing complete!"

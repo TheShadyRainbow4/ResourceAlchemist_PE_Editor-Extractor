@@ -30,7 +30,7 @@ Write-Host "Signing executable binaries (x86)..."
 # Sync version numbers
 $appVersion = "1.4.0.0"
 $versionContent = Get-Content -Path "version.h" -Raw
-if ($versionContent -match '#define RAH_VERSION L`"(.*)`"') {
+if ($versionContent -match '#define RAH_VERSION L"(.*?)"') {
     $appVersion = $matches[1]
     (Get-Content -Path "Installer\setup.iss") -replace "^AppVersion=.*", "AppVersion=$appVersion" -replace "^OutputBaseFilename=.*", "OutputBaseFilename=ResourceAlchemyHacker_Installer_$appVersion" | Set-Content -Path "Installer\setup.iss"
     (Get-Content -Path "README.md") -replace "## Features \(v.* Update\)", "## Features (v$appVersion Update)" | Set-Content -Path "README.md"
