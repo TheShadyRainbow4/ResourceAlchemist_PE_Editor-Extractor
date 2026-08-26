@@ -261,3 +261,8 @@ powershell -ExecutionPolicy Bypass -File tests\run_e2e_tests.ps1
 ## Version Updates & What's New Protocol
 - **Rule:** Whenever the version number is updated throughout the source files, the "Whats New" Dialog window (accessible via the menubar About section) must also be updated simultaneously.
 - **Rule:** The "Whats New" Dialog must retain the "Whats New" paragraphs for the last 3 versions.
+
+
+## Documentation Synchronization
+- **Rule:** The eadme.md file and index.html (the high-density landing page hosted via GitHub Pages) must always be kept in sync and updated together when adding new features or documentation.
+

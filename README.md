@@ -23,7 +23,14 @@ It serves as a modernized clone of Resource Hacker and includes three main compo
 - Title banner and 3D Inset Area.
 - Dynamic Icon Targeting.
 
-## Features (v1.4.0.3 Update)
+## Features (v1.4.0.5 Update)
+- **Settings & Preferences (New in 1.4.0.5):**
+  - Integrated "What's New" Dialog inside the Help menu.
+  - Dynamically scalable TreeView icons configurable via Settings (16x16, 24x24, 32x32).
+  - Cohesive gradient-filled modal dialogs across Settings, Help, and About.
+- **Robust Build & Release CI/CD (New in 1.4.0.5):**
+  - Fully automated dual-architecture compilation and packaging (Setup EXEs + Portable ZIPs).
+  - Automated Authenticode timestamp fallback integrations.
 - **Advanced Resource Previews:**
   - Full Image rendering (Icons, Bitmaps, Cursors, Cursor Groups, Icon Groups).
   - Native AVI and WAV audio playback seamlessly integrated into the GUI.
