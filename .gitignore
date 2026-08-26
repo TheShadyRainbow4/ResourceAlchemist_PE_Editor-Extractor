@@ -37,3 +37,20 @@ ResourceAlchemyHacker_ShellExt/x64/
 Prompt_Outputs/
 tests/
 Tests/
+
+# Internal Documentation & Trackers
+BugTracker.md
+GEMINI.md
+GEMINI.MD
+ImplementationPlan.md
+InvestigationFindings.md
+ORIGINAL_REQUEST.md
+PROJECT.md
+docs.md
+docs.html
+
+# PowerShell Build & Utility Scripts
+*.ps1
+
+# Sensitive/Internal Assets
+*.pfx
