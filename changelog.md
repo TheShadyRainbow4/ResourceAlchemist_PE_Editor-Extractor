@@ -33,3 +33,8 @@ This document provides a highly granular, step-by-step breakdown of planning, de
 - **Step 2:** Modified GEMINI.md to include a rule enforcing global context gathering (reading all .md and .txt files) before starting main tasks.
 - **Step 3:** Created the Prompt_Outputs directory in the project root.
 - **Step 4:** Backfilled the Prompt_Outputs directory with the last 3 prompt/response interactions to bootstrap the new logging system.
+
+### Task: Elevate Documentation Standards to Global Rules
+- **Step 1:** Abstracted the versioning, changelog, sync, prompt logging, and context gathering rules from the local project scope into a generalized, project-agnostic <RULE[user_global_documentation_standards]> block.
+- **Step 2:** Injected the generalized global rules into the core Antigravity configuration file at C:\Users\Administrator\.gemini\GEMINI.md.
+- **Step 3:** Synchronized the new global documentation rules across the primary system drives by appending them to C:\GEMINI.md and Z:\GEMINI.md, and initializing a new M:\GEMINI.md file.
