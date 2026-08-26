@@ -154,7 +154,7 @@ std::wstring ParseResourceToText(LPCWSTR typeId, void* data, DWORD size) {
         std::wstring currentStr;
         for (DWORD i = 0; i < wchars; ++i) {
             wchar_t c = ptr[i];
-            if ((c >= 32 && c <= 126) || c > 127) { // Basic printable check
+            if ((c >= 32 && c <= 126) || c > 127 || c == L'\t' || c == L'\n' || c == L'\r') { // Preserve basic formatting and printables
                 currentStr += c;
             } else {
                 if (currentStr.length() >= 3) {
@@ -298,7 +298,7 @@ ToolbarBtnConfig g_toolbarBtns[7] = {
     { 5103, 2, L"Save Copy", L"", true, true }, // IDM_FILE_SAVEAS
     { 205, 3, L"Replace", L"", true, true }, // IDC_BTN_REPLACE
     { 212, 4, L"Delete", L"", true, true }, // IDC_BTN_DELETE
-    { 2000, 5, L"Test imageres", L"", true, true }, // IDM_TEST_LOAD
+    { 2000, 5, L"Demo File!", L"", true, true }, // IDM_TEST_LOAD
     { 5308, 6, L"Compile", L"", true, true }
 };
 bool g_bToolbarLocked = false;
@@ -3169,6 +3169,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
     return 0;
 }
+
+
+
+
+
 
 
 
