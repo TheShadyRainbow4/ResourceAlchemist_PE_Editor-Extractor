@@ -68,3 +68,8 @@
 
 7. **Interactive Dialog Previews**
    - Enable clicking a button or double-clicking a dialog resource to render and preview the actual Win32 Dialog box.
+
+- [ ] **Feature:** Add a "Whats New" Dialog window to the menubar About section. Retain the last 3 versions "Whats New" paragraph. (Update this simultaneously with version updates).
+- [ ] **Bug:** Expand all and collapse all TreeView nodes menubar buttons do nothing.
+- [ ] **Bug:** Replace dialog is not populating any information or previews and is non-functional.
+

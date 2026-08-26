@@ -1,5 +1,9 @@
 $ErrorActionPreference = 'Stop'
-$msbuild = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
+$vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -property installationPath
+if (-not $vsPath) { Write-Error "Visual Studio not found."; exit 1 }
+
+$msbuild = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
+if (-not $msbuild) { Write-Error "MSBuild not found."; exit 1 }
 
 Write-Host "Building x64..."
 & $msbuild ResourceAlchemyHacker.sln /p:Configuration=Release /p:Platform=x64
@@ -37,24 +41,14 @@ $appVersion = "1.4.0.0"
 $versionContent = Get-Content -Path "version.h" -Raw
 if ($versionContent -match '#define RAH_VERSION L"(.*?)"') {
     $appVersion = $matches[1]
+    (Get-Content -Path "Installer\setup.iss") -replace "^AppVersion=.*", "AppVersion=$appVersion" -replace "^OutputBaseFilename=.*", "OutputBaseFilename=ResourceAlchemyHacker_Installer_$appVersion" | Set-Content -Path "Installer\setup.iss"
+    (Get-Content -Path "README.md") -replace "## Features \(v.* Update\)", "## Features (v$appVersion Update)" | Set-Content -Path "README.md"
 }
 
-Write-Host "Creating Inno Setup Installers..."
-$issBase = Get-Content "Installer\setup.iss" -Raw
-$issX64 = $issBase -replace 'OutputBaseFilename=.*', "OutputBaseFilename=ResourceAlchemyHacker_Installer_x64_$appVersion" -replace 'AppVersion=.*', "AppVersion=$appVersion"
-$issX64 | Set-Content "Installer\setup_x64.iss"
+& "S:\Projects\Inno Setup 6\iscc.exe" "Installer\setup.iss"
 
-$issX86 = $issBase -replace 'ArchitecturesInstallIn64BitMode=x64compatible
-', '' -replace 'ArchitecturesAllowed=x64compatible
-', '' -replace 'OutputBaseFilename=.*', "OutputBaseFilename=ResourceAlchemyHacker_Installer_x86_$appVersion" -replace 'AppVersion=.*', "AppVersion=$appVersion" -replace '\\x64\\Release\\', '\Release\'
-$issX86 | Set-Content "Installer\setup_x86.iss"
-
-& "S:\Projects\Inno Setup 6\iscc.exe" "Installer\setup_x64.iss"
-& "S:\Projects\Inno Setup 6\iscc.exe" "Installer\setup_x86.iss"
-
-Write-Host "Signing Installers..."
-& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\Installer\ResourceAlchemyHacker_Installer_x64_$().exe"
-& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\Installer\ResourceAlchemyHacker_Installer_x86_$().exe"
+Write-Host "Signing Installer..."
+& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\Installer\ResourceAlchemyHacker_Installer_$($appVersion).exe"
 
 Write-Host "Invoking Release Publisher..."
 & .\publish_release.ps1 -AppVersion $appVersion

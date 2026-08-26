@@ -56,6 +56,7 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #define IDM_ACTION_SCAN 1007
 #define IDM_HELP_CONTENTS 302
 #define IDM_HELP_ABOUT 303
+#define IDM_HELP_WHATSNEW 304
 #include "../version.h"
 
 #pragma pack(push, 1)
@@ -132,6 +133,7 @@ HICON g_hAppIconLarge = NULL;
 HICON g_hAppIconSmall = NULL;
 
 int g_treeWidth = 220;
+int g_treeIconSize = 16;
 bool g_bDraggingSplitter = false;
 
 bool GetSelectedResourceInfo(HWND hwnd, std::wstring& outType, std::wstring& outName, std::wstring& outLang, int* outOrigin = nullptr);
@@ -230,6 +232,10 @@ bool LoadSettings(HWND hwnd) {
         RegQueryValueExW(hKey, L"TreeWidth", NULL, &type, (LPBYTE)&g_treeWidth, &size);
         size = sizeof(g_bToolbarLocked);
         RegQueryValueExW(hKey, L"ToolbarLocked", NULL, &type, (LPBYTE)&g_bToolbarLocked, &size);
+        size = sizeof(g_treeIconSize);
+        if (RegQueryValueExW(hKey, L"TreeIconSize", NULL, &type, (LPBYTE)&g_treeIconSize, &size) != ERROR_SUCCESS) {
+            g_treeIconSize = 16;
+        }
         
         WINDOWPLACEMENT wp = { sizeof(wp) };
         size = sizeof(wp);
@@ -268,6 +274,7 @@ void SaveSettings(HWND hwnd) {
             RegSetValueExW(hKey, L"WindowPlacement", 0, REG_BINARY, (LPBYTE)&wp, sizeof(wp));
         }
         RegSetValueExW(hKey, L"TreeWidth", 0, REG_DWORD, (LPBYTE)&g_treeWidth, sizeof(g_treeWidth));
+        RegSetValueExW(hKey, L"TreeIconSize", 0, REG_DWORD, (LPBYTE)&g_treeIconSize, sizeof(g_treeIconSize));
         RegSetValueExW(hKey, L"ToolbarLocked", 0, REG_DWORD, (LPBYTE)&g_bToolbarLocked, sizeof(g_bToolbarLocked));
         for (int i=0; i<7; i++) {
             std::wstring prefix = L"TB_" + std::to_wstring(i) + L"_";
@@ -849,13 +856,13 @@ LRESULT CALLBACK InsetWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                                 
                                 int imgIndex = tvi.iImage;
                                 if (lpszType == RT_GROUP_ICON || lpszType == RT_ICON) {
-                                    HICON hIcon = (HICON)LoadImageW(hMod, id, IMAGE_ICON, 16, 16, 0);
+                                    HICON hIcon = (HICON)LoadImageW(hMod, id, IMAGE_ICON, g_treeIconSize, g_treeIconSize, 0);
                                     if (hIcon) {
                                         imgIndex = ImageList_AddIcon(g_hImageListTV, hIcon);
                                         DestroyIcon(hIcon);
                                     }
                                 } else if (lpszType == RT_BITMAP) {
-                                    HBITMAP hBmp = (HBITMAP)LoadImageW(hMod, id, IMAGE_BITMAP, 16, 16, LR_CREATEDIBSECTION);
+                                    HBITMAP hBmp = (HBITMAP)LoadImageW(hMod, id, IMAGE_BITMAP, g_treeIconSize, g_treeIconSize, LR_CREATEDIBSECTION);
                                     if (hBmp) {
                                         imgIndex = ImageList_Add(g_hImageListTV, hBmp, NULL);
                                         DeleteObject(hBmp);
@@ -1112,49 +1119,68 @@ LRESULT CALLBACK SettingsDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
             hCheckBackup = CreateWindowW(L"BUTTON", L"Enable Safety Backup Protocol (Creates .bak)",
                 WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-                20, 80, 350, 25, hwnd, (HMENU)101, GetModuleHandleW(NULL), NULL);
+                20, 80, 400, 25, hwnd, (HMENU)101, GetModuleHandleW(NULL), NULL);
             SendMessageW(hCheckBackup, BM_SETCHECK, g_bSafetyBackup ? BST_CHECKED : BST_UNCHECKED, 0);
 
             hCheckVerbose = CreateWindowW(L"BUTTON", L"Verbose Log Reporting",
                 WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-                20, 110, 350, 25, hwnd, (HMENU)102, GetModuleHandleW(NULL), NULL);
+                20, 110, 400, 25, hwnd, (HMENU)102, GetModuleHandleW(NULL), NULL);
             SendMessageW(hCheckVerbose, BM_SETCHECK, g_bVerboseLogging ? BST_CHECKED : BST_UNCHECKED, 0);
 
             hCheckShowOrigin = CreateWindowW(L"BUTTON", L"Show Origin Tags in TreeView ([Base], [MUN], [MUI])",
                 WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-                20, 140, 350, 25, hwnd, (HMENU)105, GetModuleHandleW(NULL), NULL);
+                20, 140, 400, 25, hwnd, (HMENU)105, GetModuleHandleW(NULL), NULL);
             SendMessageW(hCheckShowOrigin, BM_SETCHECK, g_bShowResourceOrigins ? BST_CHECKED : BST_UNCHECKED, 0);
 
             CreateWindowW(L"STATIC", L"Custom Signing Certificate (.pfx):",
                 WS_CHILD | WS_VISIBLE,
-                20, 175, 350, 20, hwnd, NULL, GetModuleHandleW(NULL), NULL);
+                20, 175, 400, 20, hwnd, NULL, GetModuleHandleW(NULL), NULL);
 
             HWND hCertEdit = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", g_customCertPath.c_str(),
                 WS_CHILD | WS_VISIBLE | WS_TABSTOP | ES_AUTOHSCROLL,
-                20, 195, 260, 25, hwnd, (HMENU)103, GetModuleHandleW(NULL), NULL);
+                20, 195, 300, 25, hwnd, (HMENU)103, GetModuleHandleW(NULL), NULL);
 
             CreateWindowW(L"BUTTON", L"Browse",
                 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                290, 195, 80, 25, hwnd, (HMENU)104, GetModuleHandleW(NULL), NULL);
+                330, 194, 80, 27, hwnd, (HMENU)104, GetModuleHandleW(NULL), NULL);
+
+            CreateWindowW(L"STATIC", L"TreeView Icon Size:",
+                WS_CHILD | WS_VISIBLE,
+                20, 235, 400, 20, hwnd, (HMENU)106, GetModuleHandleW(NULL), NULL);
+
+            HWND hComboIconSize = CreateWindowW(L"COMBOBOX", L"",
+                WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_TABSTOP,
+                20, 255, 100, 150, hwnd, (HMENU)107, GetModuleHandleW(NULL), NULL);
+
+            SendMessageW(hComboIconSize, CB_ADDSTRING, 0, (LPARAM)L"16x16");
+            SendMessageW(hComboIconSize, CB_ADDSTRING, 0, (LPARAM)L"24x24");
+            SendMessageW(hComboIconSize, CB_ADDSTRING, 0, (LPARAM)L"32x32");
+            int selIndex = 0;
+            if (g_treeIconSize == 24) selIndex = 1;
+            else if (g_treeIconSize == 32) selIndex = 2;
+            SendMessageW(hComboIconSize, CB_SETCURSEL, selIndex, 0);
 
             CreateWindowW(L"BUTTON", L"Done!",
                 WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
-                110, 235, 80, 25, hwnd, (HMENU)IDOK, GetModuleHandleW(NULL), NULL);
+                110, 290, 80, 25, hwnd, (HMENU)IDOK, GetModuleHandleW(NULL), NULL);
             CreateWindowW(L"BUTTON", L"Cancel",
                 WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-                200, 235, 80, 25, hwnd, (HMENU)IDCANCEL, GetModuleHandleW(NULL), NULL);
+                200, 290, 80, 25, hwnd, (HMENU)IDCANCEL, GetModuleHandleW(NULL), NULL);
 
             HFONT hFont = CreateFontW(15, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
                 CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
             SendMessageW(hCheckBackup, WM_SETFONT, (WPARAM)hFont, TRUE);
             SendMessageW(hCheckVerbose, WM_SETFONT, (WPARAM)hFont, TRUE);
             SendMessageW(hCheckShowOrigin, WM_SETFONT, (WPARAM)hFont, TRUE);
+            SendMessageW(GetDlgItem(hwnd, 106), WM_SETFONT, (WPARAM)hFont, TRUE);
+            SendMessageW(hComboIconSize, WM_SETFONT, (WPARAM)hFont, TRUE);
             SendMessageW(GetDlgItem(hwnd, IDOK), WM_SETFONT, (WPARAM)hFont, TRUE);
             SendMessageW(GetDlgItem(hwnd, IDCANCEL), WM_SETFONT, (WPARAM)hFont, TRUE);
             
             CreateToolTip(hwnd, hCheckBackup, L"Toggle creation of backup binaries before performing replacement operations.");
             CreateToolTip(hwnd, hCheckVerbose, L"Enable detailed trace logging to help diagnose execution issues.");
             CreateToolTip(hwnd, hCheckShowOrigin, L"Toggle the display of [Base], [MUN], or [MUI] tags next to resources in the tree.");
+            CreateToolTip(hwnd, hComboIconSize, L"Select the display size for icons inside the resource TreeView.");
         }
         return 0;
 
@@ -1202,9 +1228,26 @@ LRESULT CALLBACK SettingsDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             // Banner
             RECT bannerRect = rect;
             bannerRect.bottom = 60;
-            HBRUSH hBannerBrush = CreateSolidBrush(RGB(70, 70, 70));
-            FillRect(hdc, &bannerRect, hBannerBrush);
-            DeleteObject(hBannerBrush);
+            
+            TRIVERTEX vertex[2];
+            vertex[0].x = bannerRect.left;
+            vertex[0].y = bannerRect.top;
+            vertex[0].Red = 0x0500;
+            vertex[0].Green = 0x0000;
+            vertex[0].Blue = 0x1500;
+            vertex[0].Alpha = 0x0000;
+
+            vertex[1].x = bannerRect.right;
+            vertex[1].y = bannerRect.bottom;
+            vertex[1].Red = 0x0000;
+            vertex[1].Green = 0x7500;
+            vertex[1].Blue = 0xAA00;
+            vertex[1].Alpha = 0x0000;
+
+            GRADIENT_RECT gRect;
+            gRect.UpperLeft = 0;
+            gRect.LowerRight = 1;
+            GradientFill(hdc, vertex, 2, &gRect, 1, GRADIENT_FILL_RECT_H);
 
             DrawIconEx(hdc, 15, 12, g_hAppIconLarge, 36, 36, 0, NULL, DI_NORMAL);
 
@@ -1262,6 +1305,13 @@ LRESULT CALLBACK SettingsDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             bool oldShowOrigin = g_bShowResourceOrigins;
             g_bShowResourceOrigins = (SendMessageW(hCheckShowOrigin, BM_GETCHECK, 0, 0) == BST_CHECKED);
             
+            HWND hCombo = GetDlgItem(hwnd, 107);
+            int sel = SendMessageW(hCombo, CB_GETCURSEL, 0, 0);
+            int oldSize = g_treeIconSize;
+            if (sel == 1) g_treeIconSize = 24;
+            else if (sel == 2) g_treeIconSize = 32;
+            else g_treeIconSize = 16;
+            
             wchar_t buf[MAX_PATH];
             GetWindowTextW(GetDlgItem(hwnd, 103), buf, MAX_PATH);
             g_customCertPath = buf;
@@ -1273,14 +1323,165 @@ LRESULT CALLBACK SettingsDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             WritePrivateProfileStringW(L"Settings", L"VerboseLogging", g_bVerboseLogging ? L"1" : L"0", iniFile.c_str());
             WritePrivateProfileStringW(L"Settings", L"ShowResourceOrigins", g_bShowResourceOrigins ? L"1" : L"0", iniFile.c_str());
             WritePrivateProfileStringW(L"Settings", L"CustomCertPath", g_customCertPath.c_str(), iniFile.c_str());
+            WritePrivateProfileStringW(L"Settings", L"TreeIconSize", std::to_wstring(g_treeIconSize).c_str(), iniFile.c_str());
             
-            if (oldShowOrigin != g_bShowResourceOrigins && !g_loadedFile.empty()) {
+            if ((oldShowOrigin != g_bShowResourceOrigins || oldSize != g_treeIconSize) && !g_loadedFile.empty()) {
                 extern HWND g_hwndListBox;
                 GuiListResources(g_loadedFile, g_hwndListBox);
             }
             
             DestroyWindow(hwnd);
         } else if (LOWORD(wParam) == IDCANCEL) {
+            DestroyWindow(hwnd);
+        }
+        return 0;
+    }
+    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+}
+
+// What's New Dialog Procedural Handler
+LRESULT CALLBACK WhatsNewDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+    case WM_CREATE:
+        {
+            extern HICON g_hAppIconLarge;
+            SendMessageW(hwnd, WM_SETICON, ICON_BIG, (LPARAM)g_hAppIconLarge);
+
+            HWND hText = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT",
+                L"What's New in v1.4.0.4:\r\n"
+                L"- Packaged zipped releases into subdirectories (portable setup).\r\n"
+                L"- Add installer to packaged zipped releases.\r\n"
+                L"- Refactored Settings Dialog to use main window custom gradient banner.\r\n"
+                L"- Added dynamic TreeView Icon Extraction & Scaling Options (16x16, 24x24, 32x32).\r\n"
+                L"- Added What's New Dialog.\r\n"
+                L"\r\n"
+                L"What's New in v1.4.0.3:\r\n"
+                L"- Fix UI scaling so TreeView properly cascades and fills space on start.\r\n"
+                L"- Hex-dump fallback in text viewer to prevent mojibake on binary items.\r\n"
+                L"- Removed unneeded manual layout jumps.\r\n"
+                L"\r\n"
+                L"What's New in v1.4.0.2:\r\n"
+                L"- Re-organized code structure for main window creation.\r\n"
+                L"- Minor bug fixes and typo corrections.\r\n",
+                WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_MULTILINE | ES_READONLY,
+                20, 80, 460, 250, hwnd, (HMENU)102, GetModuleHandleW(NULL), NULL);
+
+            HFONT hFont = CreateFontW(14, 0, 0, 0, FW_REGULAR, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS,
+                CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI");
+            SendMessageW(hText, WM_SETFONT, (WPARAM)hFont, TRUE);
+
+            CreateWindowW(L"BUTTON", L"Okay",
+                WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON,
+                210, 345, 80, 25, hwnd, (HMENU)IDOK, GetModuleHandleW(NULL), NULL);
+            SendMessageW(GetDlgItem(hwnd, IDOK), WM_SETFONT, (WPARAM)hFont, TRUE);
+        }
+        return 0;
+
+    case WM_SIZE:
+        {
+            int width = LOWORD(lParam);
+            int height = HIWORD(lParam);
+            int chinY = height - 45;
+            int btnH = 25;
+            int btnY = chinY + (45 - btnH) / 2;
+            
+            HWND hBtn = GetDlgItem(hwnd, IDOK);
+            if (hBtn) {
+                SetWindowPos(hBtn, NULL, (width - 80) / 2, btnY, 80, btnH, SWP_NOZORDER);
+            }
+            HWND hText = GetDlgItem(hwnd, 102);
+            if (hText) {
+                SetWindowPos(hText, NULL, 20, 80, width - 40, chinY - 80 - 15, SWP_NOZORDER);
+            }
+        }
+        return 0;
+
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORSTATIC:
+        {
+            HDC hdc = (HDC)wParam;
+            HWND hCtrl = (HWND)lParam;
+            int ctrlId = GetDlgCtrlID(hCtrl);
+            if (ctrlId == IDOK || ctrlId == 103) {
+                SetBkMode(hdc, TRANSPARENT);
+                static HBRUSH hChinBrush = CreateSolidBrush(RGB(225, 225, 225));
+                return (INT_PTR)hChinBrush;
+            }
+            SetBkMode(hdc, TRANSPARENT);
+            return (INT_PTR)GetSysColorBrush(COLOR_BTNFACE);
+        }
+
+    case WM_ERASEBKGND:
+        {
+            HDC hdc = (HDC)wParam;
+            RECT rect;
+            GetClientRect(hwnd, &rect);
+            HBRUSH hBg = GetSysColorBrush(COLOR_BTNFACE);
+            FillRect(hdc, &rect, hBg);
+            
+            RECT chinRect = rect;
+            chinRect.top = rect.bottom - 45;
+            HBRUSH hChinBrush = CreateSolidBrush(RGB(200, 200, 200));
+            FillRect(hdc, &chinRect, hChinBrush);
+            DeleteObject(hChinBrush);
+            return 1;
+        }
+
+    case WM_PAINT:
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hwnd, &ps);
+            RECT rect;
+            GetClientRect(hwnd, &rect);
+
+            RECT bannerRect = rect;
+            bannerRect.bottom = 60;
+            
+            TRIVERTEX vertex[2];
+            vertex[0].x = bannerRect.left;
+            vertex[0].y = bannerRect.top;
+            vertex[0].Red = 0x0500;
+            vertex[0].Green = 0x0000;
+            vertex[0].Blue = 0x1500;
+            vertex[0].Alpha = 0x0000;
+
+            vertex[1].x = bannerRect.right;
+            vertex[1].y = bannerRect.bottom;
+            vertex[1].Red = 0x0000;
+            vertex[1].Green = 0x7500;
+            vertex[1].Blue = 0xAA00;
+            vertex[1].Alpha = 0x0000;
+
+            GRADIENT_RECT gRect;
+            gRect.UpperLeft = 0;
+            gRect.LowerRight = 1;
+            GradientFill(hdc, vertex, 2, &gRect, 1, GRADIENT_FILL_RECT_H);
+
+            extern HICON g_hAppIconLarge;
+            DrawIconEx(hdc, 15, 12, g_hAppIconLarge, 32, 32, 0, NULL, DI_NORMAL);
+
+            SetTextColor(hdc, RGB(255, 255, 255));
+            SetBkMode(hdc, TRANSPARENT);
+            HFONT hFont = CreateFontW(22, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+                CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, VARIABLE_PITCH, L"Segoe UI");
+            SelectObject(hdc, hFont);
+            RECT textRect = bannerRect;
+            textRect.left = 65;
+            DrawTextW(hdc, L"What's New in Resource Alchemy Hacker", -1, &textRect, DT_SINGLELINE | DT_VCENTER | DT_LEFT);
+            DeleteObject(hFont);
+
+            DrawEdge(hdc, &bannerRect, BDR_SUNKENOUTER, BF_BOTTOM);
+            
+            RECT chinRect = rect;
+            chinRect.top = rect.bottom - 45;
+            DrawEdge(hdc, &chinRect, BDR_RAISEDINNER, BF_TOP);
+            
+            EndPaint(hwnd, &ps);
+        }
+        return 0;
+
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL) {
             DestroyWindow(hwnd);
         }
         return 0;
@@ -1710,14 +1911,14 @@ BOOL CALLBACK GuiEnumResNameProc(HMODULE hModule, LPCWSTR lpszType, LPWSTR lpszN
                 HGLOBAL hData = LoadResource(ctx->hMod, hRes);
                 if (hData) {
                     PBYTE pData = (PBYTE)LockResource(hData);
-                    int nID = (lpszType == RT_GROUP_ICON) ? LookupIconIdFromDirectoryEx(pData, TRUE, 16, 16, LR_DEFAULTCOLOR) : 0;
+                    int nID = (lpszType == RT_GROUP_ICON) ? LookupIconIdFromDirectoryEx(pData, TRUE, g_treeIconSize, g_treeIconSize, LR_DEFAULTCOLOR) : 0;
                     HRSRC hResIcon = (lpszType == RT_GROUP_ICON) ? FindResourceW(ctx->hMod, MAKEINTRESOURCEW(nID), RT_ICON) : hRes;
                     if (hResIcon) {
                         HGLOBAL hIconData = LoadResource(ctx->hMod, hResIcon);
                         if (hIconData) {
                             PBYTE pIconData = (PBYTE)LockResource(hIconData);
                             DWORD iconSize = SizeofResource(ctx->hMod, hResIcon);
-                            HICON hIcon = CreateIconFromResourceEx(pIconData, iconSize, TRUE, 0x00030000, 16, 16, LR_DEFAULTCOLOR);
+                            HICON hIcon = CreateIconFromResourceEx(pIconData, iconSize, TRUE, 0x00030000, g_treeIconSize, g_treeIconSize, LR_DEFAULTCOLOR);
                             if (hIcon) {
                                 imgIndex = ImageList_AddIcon(g_hImageListTV, hIcon);
                                 DestroyIcon(hIcon);
@@ -1728,7 +1929,7 @@ BOOL CALLBACK GuiEnumResNameProc(HMODULE hModule, LPCWSTR lpszType, LPWSTR lpszN
                 }
             }
         } else if (lpszType == RT_BITMAP) {
-            HBITMAP hBmp = (HBITMAP)LoadImageW(ctx->hMod, lpszName, IMAGE_BITMAP, 16, 16, LR_CREATEDIBSECTION);
+            HBITMAP hBmp = (HBITMAP)LoadImageW(ctx->hMod, lpszName, IMAGE_BITMAP, g_treeIconSize, g_treeIconSize, LR_CREATEDIBSECTION);
             if (hBmp) {
                 imgIndex = ImageList_Add(g_hImageListTV, hBmp, NULL);
                 DeleteObject(hBmp);
@@ -1750,9 +1951,9 @@ BOOL CALLBACK GuiEnumResNameProc(HMODULE hModule, LPCWSTR lpszType, LPWSTR lpszN
                         CreateStreamOnHGlobal(hMem, TRUE, &pStream);
                         if (pStream) {
                             Gdiplus::Image image(pStream);
-                            Gdiplus::Bitmap* pBitmap = new Gdiplus::Bitmap(16, 16, image.GetPixelFormat());
+                            Gdiplus::Bitmap* pBitmap = new Gdiplus::Bitmap(g_treeIconSize, g_treeIconSize, image.GetPixelFormat());
                             Gdiplus::Graphics g(pBitmap);
-                            g.DrawImage(&image, 0, 0, 16, 16);
+                            g.DrawImage(&image, 0, 0, g_treeIconSize, g_treeIconSize);
                             HBITMAP hBmp = NULL;
                             pBitmap->GetHBITMAP(Gdiplus::Color(255,255,255,255), &hBmp);
                             if (hBmp) {
@@ -1822,11 +2023,12 @@ BOOL CALLBACK GuiEnumResTypeProc(HMODULE hModule, LPWSTR lpszType, LONG_PTR lPar
 void GuiListResources(const std::wstring& target, HWND hTreeView) {
     SendMessageW(hTreeView, TVM_DELETEITEM, 0, (LPARAM)TVI_ROOT);
     
-    if (!g_hImageListTV) {
-        g_hImageListTV = ImageList_Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 500);
-        SendMessageW(hTreeView, TVM_SETIMAGELIST, TVSIL_NORMAL, (LPARAM)g_hImageListTV);
+    if (g_hImageListTV) {
+        ImageList_Destroy(g_hImageListTV);
+        g_hImageListTV = NULL;
     }
-    ImageList_Remove(g_hImageListTV, -1);
+    g_hImageListTV = ImageList_Create(g_treeIconSize, g_treeIconSize, ILC_COLOR32 | ILC_MASK, 0, 500);
+    SendMessageW(hTreeView, TVM_SETIMAGELIST, TVSIL_NORMAL, (LPARAM)g_hImageListTV);
     
     HINSTANCE hInstance = GetModuleHandle(NULL);
     HICON hIconFolder = ExtractIconW(hInstance, L"shell32.dll", 3);
@@ -2305,6 +2507,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
             HMENU hHelp = CreatePopupMenu();
             AppendMenuW(hHelp, MF_STRING, IDM_HELP_CONTENTS, L"Help Topics\tF1");
             AppendMenuW(hHelp, MF_STRING, IDM_HELP_ABOUT, L"About Resource Alchemy Hacker");
+            AppendMenuW(hHelp, MF_SEPARATOR, 0, NULL);
+            AppendMenuW(hHelp, MF_STRING, IDM_HELP_WHATSNEW, L"What's New...");
             
             AppendMenuW(hMenu, MF_POPUP, (UINT_PTR)hFile, L"&File");
             AppendMenuW(hMenu, MF_POPUP, (UINT_PTR)hEdit, L"&Edit");
@@ -2713,9 +2917,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     }
                 }
             } else if (ctrlId == IDC_BTN_SETTINGS) {
-                ShowCustomModalDialog(hwnd, SettingsDlgProc, L"Settings Dialog", 400, 300);
+                ShowCustomModalDialog(hwnd, SettingsDlgProc, L"Settings Dialog", 450, 380);
             } else if (ctrlId == IDM_HELP_CONTENTS) {
                 ShowCustomModalDialog(hwnd, HelpDlgProc, L"Help & Documentation", 500, 440);
+            } else if (ctrlId == IDM_HELP_WHATSNEW) {
+                ShowCustomModalDialog(hwnd, WhatsNewDlgProc, L"What's New in Resource Alchemy Hacker", 500, 420);
             } else if (ctrlId == IDM_HELP_ABOUT) {
                 ShowCustomModalDialog(hwnd, AboutDlgProc, L"About Resource Alchemy Hacker", 416, 270);
             } else if (ctrlId == IDC_LOGS_LINK) {
@@ -2763,6 +2969,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     break;
                 case IDM_HELP_CONTENTS:
                     SendMessageW(g_hwndStatus, SB_SETTEXTW, 0, (LPARAM)L"Display instructions. Because reading the documentation is always a last resort.");
+                    break;
+                case IDM_HELP_WHATSNEW:
+                    SendMessageW(g_hwndStatus, SB_SETTEXTW, 0, (LPARAM)L"See what's new in this version.");
                     break;
                 case IDM_HELP_ABOUT:
                     SendMessageW(g_hwndStatus, SB_SETTEXTW, 0, (LPARAM)L"Display system details and credentials of the grand alchemists.");

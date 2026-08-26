@@ -22,14 +22,30 @@ Start-Sleep -Seconds 3
 Remove-Item temp_docs.md, temp_docs.html -ErrorAction SilentlyContinue
 
 Write-Host "Packaging x64 ZIP..."
+$x64Dir = "ResourceAlchemyHacker_x64"
+New-Item -ItemType Directory -Force -Path $x64Dir
+Copy-Item ".\x64\Release\ResourceAlchemyHacker_CLI.exe" -Destination $x64Dir
+Copy-Item ".\x64\Release\ResourceAlchemyHacker_GUI.exe" -Destination $x64Dir
+Copy-Item ".\x64\Release\ResourceAlchemyHacker_ShellExt.dll" -Destination $x64Dir
+Copy-Item "ResourceAlchemyHacker_Documentation.pdf" -Destination $x64Dir
+Copy-Item ".\Installer\ResourceAlchemyHacker_Installer_x64_$AppVersion.exe" -Destination $x64Dir
 $x64Zip = "ResourceAlchemyHacker_x64.zip"
-Remove-Item $x64Zip -ErrorAction SilentlyContinue
-Compress-Archive -Path ".\x64\Release\*", "ResourceAlchemyHacker_Documentation.pdf" -DestinationPath $x64Zip -CompressionLevel Optimal -Force
+if (Test-Path $x64Zip) { Remove-Item $x64Zip }
+Compress-Archive -Path "$x64Dir\*" -DestinationPath $x64Zip
+Remove-Item -Recurse -Force $x64Dir
 
 Write-Host "Packaging x86 ZIP..."
+$x86Dir = "ResourceAlchemyHacker_x86"
+New-Item -ItemType Directory -Force -Path $x86Dir
+Copy-Item ".\Release\ResourceAlchemyHacker_CLI.exe" -Destination $x86Dir
+Copy-Item ".\Release\ResourceAlchemyHacker_GUI.exe" -Destination $x86Dir
+Copy-Item ".\Release\ResourceAlchemyHacker_ShellExt.dll" -Destination $x86Dir
+Copy-Item "ResourceAlchemyHacker_Documentation.pdf" -Destination $x86Dir
+Copy-Item ".\Installer\ResourceAlchemyHacker_Installer_x86_$AppVersion.exe" -Destination $x86Dir
 $x86Zip = "ResourceAlchemyHacker_x86.zip"
-Remove-Item $x86Zip -ErrorAction SilentlyContinue
-Compress-Archive -Path ".\Release\*", "ResourceAlchemyHacker_Documentation.pdf" -DestinationPath $x86Zip -CompressionLevel Optimal -Force
+if (Test-Path $x86Zip) { Remove-Item $x86Zip }
+Compress-Archive -Path "$x86Dir\*" -DestinationPath $x86Zip
+Remove-Item -Recurse -Force $x86Dir
 
 Write-Host "Committing and Pushing to Git..."
 git add .
@@ -37,6 +53,6 @@ git commit -m "Auto-build and release v$AppVersion"
 git push -u origin master
 
 Write-Host "Creating GitHub Release..."
-gh release create "v$AppVersion" "$x64Zip" "$x86Zip" "Installer\ResourceAlchemyHacker_Installer_$($AppVersion).exe" "ResourceAlchemyHacker_Documentation.pdf" --title "Resource Alchemy Hacker v$AppVersion" --notes "Automated Build and Release v$AppVersion"
+gh release create "v$AppVersion" "$x64Zip" "$x86Zip" ".\Installer\ResourceAlchemyHacker_Installer_x64_$AppVersion.exe" ".\Installer\ResourceAlchemyHacker_Installer_x86_$AppVersion.exe" "ResourceAlchemyHacker_Documentation.pdf" --title "Resource Alchemy Hacker v$AppVersion" --notes "Automated Build and Release v$AppVersion"
 
 Write-Host "Release publishing complete!"

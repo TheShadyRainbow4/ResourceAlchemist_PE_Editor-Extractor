@@ -256,3 +256,8 @@ powershell -ExecutionPolicy Bypass -File tests\run_e2e_tests.ps1
 - `tests/test_tier4_real_world.py`: Tier 4 Real-World Scenario Workflow Tests
 - `tests/run_e2e_tests.py`: Python Execution Runner
 - `tests/run_e2e_tests.ps1`: PowerShell Execution Script
+
+
+## Version Updates & What's New Protocol
+- **Rule:** Whenever the version number is updated throughout the source files, the "Whats New" Dialog window (accessible via the menubar About section) must also be updated simultaneously.
+- **Rule:** The "Whats New" Dialog must retain the "Whats New" paragraphs for the last 3 versions.
