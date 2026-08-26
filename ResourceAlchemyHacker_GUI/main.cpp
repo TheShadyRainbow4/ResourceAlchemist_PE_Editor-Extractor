@@ -2816,7 +2816,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                     break;
                 }
                 g_replacementFile = L"";
-                ShowCustomModalDialog(hwnd, ReplaceDlgProc, L"Replace Resource", 480, 340);
+                ShowCustomModalDialog(hwnd, ReplaceDlgProc, L"Replace Resource", 480, 420);
                 if (!g_replacementFile.empty()) {
                     if (g_bSafetyBackup) BackupFile(g_originalFile);
                     if (RunCLIAction(L"/replace", GetFileFromOrigin(rOrigin), g_replaceType, g_replaceName, g_replaceLang, g_replacementFile)) {
@@ -2828,7 +2828,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
                         SendMessageW(g_hwndStatus, SB_SETTEXTW, 0, (LPARAM)L"Resource replacement failed.");
                     }
                 }
-            } else if (ctrlId == IDM_FILE_SAVE) {
+                          } else if (ctrlId == 5401) { // Expand Tree Node
+                  HTREEITEM hSel = (HTREEITEM)SendMessageW(g_hwndListBox, TVM_GETNEXTITEM, TVGN_CARET, 0);
+                  if (hSel) {
+                      SendMessageW(g_hwndListBox, TVM_EXPAND, TVE_EXPAND, (LPARAM)hSel);
+                  } else {
+                      HTREEITEM hRoot = (HTREEITEM)SendMessageW(g_hwndListBox, TVM_GETNEXTITEM, TVGN_ROOT, 0);
+                      while (hRoot) {
+                          SendMessageW(g_hwndListBox, TVM_EXPAND, TVE_EXPAND, (LPARAM)hRoot);
+                          hRoot = (HTREEITEM)SendMessageW(g_hwndListBox, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)hRoot);
+                      }
+                  }
+              } else if (ctrlId == 5402) { // Collapse Tree Node
+                  HTREEITEM hSel = (HTREEITEM)SendMessageW(g_hwndListBox, TVM_GETNEXTITEM, TVGN_CARET, 0);
+                  if (hSel) {
+                      SendMessageW(g_hwndListBox, TVM_EXPAND, TVE_COLLAPSE, (LPARAM)hSel);
+                  } else {
+                      HTREEITEM hRoot = (HTREEITEM)SendMessageW(g_hwndListBox, TVM_GETNEXTITEM, TVGN_ROOT, 0);
+                      while (hRoot) {
+                          SendMessageW(g_hwndListBox, TVM_EXPAND, TVE_COLLAPSE, (LPARAM)hRoot);
+                          hRoot = (HTREEITEM)SendMessageW(g_hwndListBox, TVM_GETNEXTITEM, TVGN_NEXT, (LPARAM)hRoot);
+                      }
+                  }
+              } else if (ctrlId == IDM_FILE_SAVE) {
                 if (g_loadedFile.empty() || g_originalFile.empty()) break;
                 ShowProgressDialogAndSave(hwnd);
             } else if (ctrlId == IDM_FILE_SAVEAS) {
@@ -3125,11 +3147,13 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
     MSG msg = { };
     
-    ACCEL accels[2] = {
+    ACCEL accels[4] = {
         { FCONTROL | FVIRTKEY, 'R', IDC_BTN_REPLACE },
+          { FCONTROL | FVIRTKEY, 'E', 5401 },
+          { FCONTROL | FVIRTKEY, 'C', 5402 },
         { FVIRTKEY, VK_F1, IDM_HELP_CONTENTS }
     };
-    HACCEL hAccel = CreateAcceleratorTableW(accels, 2);
+    HACCEL hAccel = CreateAcceleratorTableW(accels, 4);
     
     while (GetMessageW(&msg, NULL, 0, 0) > 0) {
         if (msg.message == WM_KEYDOWN && msg.wParam == VK_F1) {
@@ -3145,3 +3169,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
     return 0;
 }
+
+
+
+
+

@@ -44,3 +44,14 @@ This document provides a highly granular, step-by-step breakdown of planning, de
 - **Step 1:** Scanned the C:\, Z:\, and M:\ drives to analyze the architectural layouts of existing EliteSoftware tools (Elite-Taskbar, IconExplorer, Local_APK_Store, ResourceAlchemyHacker, etc.).
 - **Step 2:** Synthesized the recurring patterns into a formalized <RULE[user_global_project_structure]> template, defining strict separation of GUI, CLI, and Shell components, alongside mandatory testing and release folders.
 - **Step 3:** Appended this new structural rule template to all global GEMINI.md configuration files (~/.gemini, C:\, Z:\, and M:\).
+
+### Task: Fix Expand/Collapse Menubar Actions (BugTracker Chunk 3)
+- **Step 1:** Injected WM_COMMAND routing logic in ResourceAlchemyHacker_GUI\main.cpp for menu IDs 5401 and 5402 to handle TreeView node expansion and collapsing.
+- **Step 2:** Added conditional fallback to iterate and expand/collapse all root nodes using TVM_GETNEXTITEM and TVM_EXPAND if no specific node is currently selected by the user.
+- **Step 3:** Bound Ctrl+E and Ctrl+C in the HACCEL accelerator table to physically wire the hotkeys to the menu actions.
+
+### Task: Fix Replace Dialog GUI Layout (BugTracker Chunk 4)
+- **Step 1:** Completely refactored ReplaceDlgProc inside ResourceAlchemyHacker_GUI\main.cpp to correctly apply the standard legacy Win32/WinForms aesthetics (custom WM_PAINT gradient banner, top/bottom BDR_SUNKENOUTER client edge, and 3D chin).
+- **Step 2:** Added text control parsing to accurately display the g_replaceName and g_replaceType in a FW_SEMIBOLD font header, dynamically populating the UI based on the selected target node.
+- **Step 3:** Centered the preview icon coordinate extraction inside the owner-drawn bounding box and fixed missing fonts causing the buttons to render out of style.
+- **Step 4:** Increased modal dialog dimension boundary from 340 to 420 to accommodate the newly injected title banner layout.
