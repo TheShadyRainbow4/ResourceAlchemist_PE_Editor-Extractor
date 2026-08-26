@@ -31,8 +31,13 @@ This document provides a highly granular, step-by-step breakdown of planning, de
 - **Step 17:** C:\GEMINI.md | Edited file | Synchronized strict single-file changelog tracking rules.
 - **Step 18:** Z:\GEMINI.md | Edited file | Synchronized strict single-file changelog tracking rules.
 - **Step 19:** M:\GEMINI.md | Edited file | Synchronized strict single-file changelog tracking rules.
+- **Step 20:** C:\Users\Administrator\.gemini\GEMINI.md | Edited file | Appended new global rule requiring a dedicated, active Changelog Auditor subagent to ensure zero file changes are missed.
+- **Step 21:** C:\GEMINI.md | Edited file | Synchronized the Changelog Auditor subagent rule.
+- **Step 22:** Z:\GEMINI.md | Edited file | Synchronized the Changelog Auditor subagent rule.
+- **Step 23:** M:\GEMINI.md | Edited file | Synchronized the Changelog Auditor subagent rule.
 
 ### Summary of v1.4.0.6 Release
 This version successfully resolved the non-functional Expand/Collapse TreeView menubar buttons by wiring up native Win32 TVM_EXPAND messages to Ctrl+E and Ctrl+C accelerator keys. Furthermore, it completely overhauled the broken Replace Dialog, restoring the legacy visual styles (gradient banners, 3D client edge) and fixing the missing resource preview information. A global project structure rule was formalized and distributed across all drive endpoints. Finally, the remote git repository was thoroughly scrubbed and secured via an aggressively tuned .gitignore, ensuring intermediate objects, prompt outputs, and internal test folders remain strictly localized and invisible on the public branch.
+
 
 
