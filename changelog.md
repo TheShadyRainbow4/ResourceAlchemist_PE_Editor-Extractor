@@ -27,3 +27,9 @@ This document provides a highly granular, step-by-step breakdown of planning, de
 ### Task: Link Changelog in Documentation
 - **Step 1:** Modified eadme.md to include a direct markdown link to changelog.md under the Project Structure section.
 - **Step 2:** Modified index.html to include a direct hyperlink to the GitHub-hosted changelog.md file within the left-hand Navigation sidebar under Resources.
+
+### Task: Implement Prompt Logging & Context Gathering Rules
+- **Step 1:** Modified GEMINI.md to include rules for maintaining a Prompt_Outputs directory.
+- **Step 2:** Modified GEMINI.md to include a rule enforcing global context gathering (reading all .md and .txt files) before starting main tasks.
+- **Step 3:** Created the Prompt_Outputs directory in the project root.
+- **Step 4:** Backfilled the Prompt_Outputs directory with the last 3 prompt/response interactions to bootstrap the new logging system.
