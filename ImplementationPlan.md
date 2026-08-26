@@ -28,7 +28,9 @@ This checklist outlines a safe, step-by-step approach to fixing all bugs and imp
 - [ ] **13. State Persistence:** Save the window position, window size, and a history of the last 30 opened files to the registry or a local config file to be reloaded on launch.
 - [ ] **14. Action Menu Wire-Up:** Connect the remaining unimplemented Action Menu and "Add from resource script (.rc)" options to their respective backend logic.
 
-- [ ] **Feature:** Add a "Whats New" Dialog window to the menubar About section. Retain the last 3 versions "Whats New" paragraph. (Update this simultaneously with version updates).
-- [ ] **Bug:** Expand all and collapse all TreeView nodes menubar buttons do nothing.
-- [ ] **Bug:** Replace dialog is not populating any information or previews and is non-functional.
+- [x] **Feature:** Add a "Whats New" Dialog window to the menubar About section. Retain the last 3 versions "Whats New" paragraph. (Update this simultaneously with version updates).
+- [x] **Bug:** Expand all and collapse all TreeView nodes menubar buttons do nothing.
+- [x] **Bug:** Replace dialog is not populating any information or previews and is non-functional.
+
+
 
