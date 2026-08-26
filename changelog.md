@@ -63,3 +63,7 @@ This document provides a highly granular, step-by-step breakdown of planning, de
 ### Task: Clean Up Git Repository
 - **Step 1:** Created a comprehensive .gitignore to exclude Visual Studio intermediate objects (*.obj, *.tlog, *.pdb, etc.), backup files (*.bak), and local build ZIPs, while explicitly retaining the compiled Release binary outputs for distribution.
 - **Step 2:** Refreshed the git cache to untrack the previously tracked intermediate files and pushed the cleaned repository state to remote.
+
+### Task: Hide Development Folders from Remote
+- **Step 1:** Updated .gitignore to explicitly ignore all dot-folders (.*/), the Prompt_Outputs/ directory, and the 	ests/ directory to keep the main public branch pristine.
+- **Step 2:** Executed git rm -r --cached to purge .agents/, Prompt_Outputs/, and 	ests/ from the remote tracking index without deleting the local files.

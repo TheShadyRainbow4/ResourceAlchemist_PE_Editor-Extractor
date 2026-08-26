@@ -28,3 +28,12 @@ ResourceAlchemyHacker_GUI/Release/
 ResourceAlchemyHacker_GUI/x64/
 ResourceAlchemyHacker_ShellExt/Release/
 ResourceAlchemyHacker_ShellExt/x64/
+
+# Ignore all dot-folders (e.g. .agents, .vs)
+.*/
+!.github/
+
+# Ignore prompt logs and tests
+Prompt_Outputs/
+tests/
+Tests/
