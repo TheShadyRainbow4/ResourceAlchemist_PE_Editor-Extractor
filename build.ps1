@@ -13,8 +13,17 @@ Write-Host "Building x86..."
 & $msbuild ResourceAlchemyHacker.sln /p:Configuration=Release /p:Platform=x86
 if ($LASTEXITCODE -ne 0) { Write-Error "Build x86 failed."; exit 1 }
 
-$signtool = ".\SignTool\signtool.exe"
-$pfx = ".\SignTool\EliteSoftware_Special.pfx"
+$sdkRoot = "C:\Program Files (x86)\Windows Kits"
+$signtool = ""
+if (Test-Path $sdkRoot) {
+    $versions = Get-ChildItem -Path (Join-Path $sdkRoot "10\bin") -Directory -ErrorAction SilentlyContinue | Sort-Object Name -Descending
+    foreach ($v in $versions) {
+        $p = Join-Path $v.FullName "x64\signtool.exe"
+        if (Test-Path $p) { $signtool = $p; break }
+    }
+}
+if (!$signtool) { $signtool = "signtool.exe" }
+$pfx = "C:\EliteSoftware PE TOOLS\Elite-EasySigner\EliteSoftware_Special.pfx"
 $pass = "Minecraft145!!"
 
 Write-Host "Signing executable binaries (x64)..."

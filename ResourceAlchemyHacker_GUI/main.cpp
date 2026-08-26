@@ -140,14 +140,19 @@ HIMAGELIST g_hImageListTV = NULL;
 void GuiListResources(const std::wstring& path, HWND hwndTV);
 
 std::wstring ParseResourceToText(LPCWSTR typeId, void* data, DWORD size) {
-    if (typeId == RT_VERSION || typeId == RT_STRING || typeId == RT_DIALOG || typeId == RT_MENU || typeId == RT_MESSAGETABLE) {
+    if (size == 0 || !data) return L"";
+    
+    // Check if typeId is an integer resource type
+    bool isIntResource = IS_INTRESOURCE(typeId);
+    
+    if (isIntResource && (typeId == RT_VERSION || typeId == RT_STRING || typeId == RT_DIALOG || typeId == RT_MENU || typeId == RT_MESSAGETABLE)) {
         std::wstring out;
         wchar_t* ptr = (wchar_t*)data;
         DWORD wchars = size / 2;
         std::wstring currentStr;
         for (DWORD i = 0; i < wchars; ++i) {
             wchar_t c = ptr[i];
-            if (iswprint(c)) {
+            if ((c >= 32 && c <= 126) || c > 127) { // Basic printable check
                 currentStr += c;
             } else {
                 if (currentStr.length() >= 3) {
@@ -159,14 +164,45 @@ std::wstring ParseResourceToText(LPCWSTR typeId, void* data, DWORD size) {
         if (currentStr.length() >= 3) out += currentStr + L"\r\n";
         if (out.empty()) out = L"(Binary data, no strings found)";
         return out;
-    } else if (typeId == RT_MANIFEST || typeId == RT_HTML) {
+    } else if (isIntResource && (typeId == RT_MANIFEST || typeId == RT_HTML)) {
         int wLen = MultiByteToWideChar(CP_UTF8, 0, (char*)data, size, NULL, 0);
         std::wstring out(wLen, 0);
         MultiByteToWideChar(CP_UTF8, 0, (char*)data, size, &out[0], wLen);
         return out;
     }
-    std::string strData((char*)data, size);
-    return std::wstring(strData.begin(), strData.end());
+    
+    // Fallback: Hex Dump for unknown binary data to prevent Mojibake
+    std::wstring out;
+    unsigned char* p = (unsigned char*)data;
+    wchar_t buf[256];
+    for (DWORD i = 0; i < size && i < 4096; i += 16) {
+        swprintf(buf, 256, L"%08X  ", i);
+        out += buf;
+        for (DWORD j = 0; j < 16; ++j) {
+            if (i + j < size) {
+                swprintf(buf, 256, L"%02X ", p[i + j]);
+                out += buf;
+            } else {
+                out += L"   ";
+            }
+        }
+        out += L" ";
+        for (DWORD j = 0; j < 16; ++j) {
+            if (i + j < size) {
+                unsigned char c = p[i + j];
+                if (c >= 32 && c <= 126) {
+                    out += (wchar_t)c;
+                } else {
+                    out += L".";
+                }
+            }
+        }
+        out += L"\r\n";
+    }
+    if (size > 4096) {
+        out += L"\r\n... (Truncated for preview) ...\r\n";
+    }
+    return out;
 }
 
 struct ToolbarBtnConfig {
@@ -2872,6 +2908,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     if (rcInset.right > 0 && rcInset.bottom > 0) {
         SendMessageW(g_hwndInset, WM_SIZE, 0, MAKELPARAM(rcInset.right, rcInset.bottom));
     }
+    
+    // Fix UI Scaling Bug: Force a full layout cascade after all elements are created
+    RECT rcMain;
+    GetClientRect(g_hwndMain, &rcMain);
+    PostMessageW(g_hwndMain, WM_SIZE, SIZE_RESTORED, MAKELPARAM(rcMain.right, rcMain.bottom));
 
     MSG msg = { };
     
