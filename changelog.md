@@ -55,3 +55,7 @@ This document provides a highly granular, step-by-step breakdown of planning, de
 - **Step 2:** Added text control parsing to accurately display the g_replaceName and g_replaceType in a FW_SEMIBOLD font header, dynamically populating the UI based on the selected target node.
 - **Step 3:** Centered the preview icon coordinate extraction inside the owner-drawn bounding box and fixed missing fonts causing the buttons to render out of style.
 - **Step 4:** Increased modal dialog dimension boundary from 340 to 420 to accommodate the newly injected title banner layout.
+
+### Task: Automate Version Bump (1.4.0.6)
+- **Step 1:** Bumped ersion.h to 1.4.0.6 and synced WhatsNewDlgProc in main.cpp.
+- **Step 2:** Re-triggered master build/release pipeline for x64 and x86.

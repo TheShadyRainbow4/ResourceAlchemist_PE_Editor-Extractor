@@ -1348,7 +1348,7 @@ LRESULT CALLBACK WhatsNewDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             SendMessageW(hwnd, WM_SETICON, ICON_BIG, (LPARAM)g_hAppIconLarge);
 
             HWND hText = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT",
-                L"What's New in v1.4.0.5:\r\n"
+                L"What's New in v1.4.0.6:\r\n"
                 L"- Fixed signtool errors by removing unreachable timestamp servers.\r\n"
                 L"- Bugtracker populated with new issues.\r\n"
                 L"\r\n"
@@ -3169,6 +3169,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
 
     return 0;
 }
+
 
 
 
