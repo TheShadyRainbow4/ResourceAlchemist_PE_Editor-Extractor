@@ -1,88 +1,96 @@
+<div align="center"> <a href='https://i.postimg.cc/85mKDbX8/EliteSoftware-Company-Logo.png' target='_blank'><img src='https://i.postimg.cc/85mKDbX8/EliteSoftware-Company-Logo.png' height='80' border='0' alt='Elite-Software-Company-Logo'></a> </div>
+
 # Resource Alchemy Hacker
 
-EliteSoftwareTech Co. - Antigravity Suite
+**Information-First Engineering. Absolute System Purity.**
 
-## Description
-Resource Alchemy Hacker is a native C++ application for viewing, extracting, and replacing resources in Windows executables (PE files).
-It serves as a modernized clone of Resource Hacker and includes three main components:
-1. **CLI Engine (`ResourceAlchemyHacker_CLI`)**: The backend worker executable that performs all resource extraction and injection using Win32 API.
-2. **GUI Application (`ResourceAlchemyHacker_GUI`)**: The frontend Win32 application adhering to EliteSoftware GUI guidelines (Native Win32 aesthetics, Client Edge, Chin, 3D inset, etc.).
-3. **Shell Extension (`ResourceAlchemyHacker_ShellExt`)**: A native C++ COM Shell Extension. It provides:
-   - Cascading context menus for quick extraction/viewing.
-   - A property sheet tab for executable files that lists resources (e.g., icons) like the native icon picker, and allows on-the-fly replacement of resources in system files (using backup renaming strategies).
+Welcome to the official source repository for [Resource Alchemy Hacker](https://main.elitesoftwaretech.cc). 
+This project serves as the digital station for EliteSoftware's engineering initiatives, blending the peak of **Frutiger Aero** (2007-2011) aesthetics with hardened, high-performance architectures of 2026.
 
-## Project Structure
-- [changelog.md](changelog.md) - Continuous granular development history
-- `/ResourceAlchemyHacker_CLI/` - Backend command line tool
-- `/ResourceAlchemyHacker_GUI/` - Main Win32 application
-- `/ResourceAlchemyHacker_ShellExt/` - COM Shell Extension (replaces old SharpShell implementation)
-- `/Installer/` - InnoSetup script for deployment
+### 🔗 Quick Links
+- 📖 [Continuous Changelog](changelog.md)
+- 🌐 [Official Web Landing Page](index.html)
 
-## Development Guidelines
-- Strictly follows EliteSoftwareTech Co. guidelines for native Win32/WinForms aesthetics.
-- Visual Styles must always be explicitly enabled.
-- Title banner and 3D Inset Area.
-- Dynamic Icon Targeting.
+## 🚀 Mission Protocol
+EliteSoftwareTech rejects modern "flat" design in favor of skeuomorphic depth and absolute user agency. We believe software should be an immersive workstation environment, not a mobile-friendly toy.
 
-## Features (v1.4.0.5 Update)
-- **Settings & Preferences (New in 1.4.0.5):**
-  - Integrated "What's New" Dialog inside the Help menu.
-  - Dynamically scalable TreeView icons configurable via Settings (16x16, 24x24, 32x32).
-  - Cohesive gradient-filled modal dialogs across Settings, Help, and About.
-- **Robust Build & Release CI/CD (New in 1.4.0.5):**
-  - Fully automated dual-architecture compilation and packaging (Setup EXEs + Portable ZIPs).
-  - Automated Authenticode timestamp fallback integrations.
-- **Advanced Resource Previews:**
-  - Full Image rendering (Icons, Bitmaps, Cursors, Cursor Groups, Icon Groups).
-  - Native AVI and WAV audio playback seamlessly integrated into the GUI.
-  - Interactive Text Previews for Manifests, String Tables, Version Info, and Dialogs.
-- **Resource Replacement & Extraction:**
-  - Intuitive "Replace Resource" dialog with side-by-side graphical previews of original and new resources.
-  - Seamless extraction and deletion of resources.
-  - Accelerated hotkeys (Ctrl+R) and Context Menu support within the TreeView.
-- **Enhanced UI & Aesthetics:**
-  - Deep system-level icons dynamically loaded for all specific resource types in the TreeView (Audio, Images, XML, Manifests, Menus).
-  - Legacy horizontal scrollbars hidden for a cleaner look (`TVS_NOHSCROLL`).
-  - Strict adherence to EliteSoftwareTech Co. guidelines (Client Edge, 3D inset).
-  - Registry-based persistence of Window dimensions and settings across sessions.
-- **Full Menu Parity:**
-  - 25+ classic Resource Hacker functions accessible via native Win32 dropdown menus (`File`, `Edit`, `View`, `Action`, `Help`).
+### Core Focus Areas:
+- **Aerexplorer:** Restoring functional and aesthetic purity to the Windows shell.
+- **System Purity:** Zero-compromise approach to system telemetry and performance.
+- **Modern Hybridization:** Blending classic UX depth with Win32 API power.
 
-## Detailed Component Documentation
+## 🛠️ Workstation Profile 
+- **Automation:** PowerShell 7.4 | 5.1
+- **Frameworks:** Native C++ (Win32 API)
+- **System Modding:** PE Executable Resource Manipulation
+- **Languages:** C++, HTML/CSS/JS (Static Station)
 
-### 1. CLI Engine (`ResourceAlchemyHacker_CLI`)
-The CLI is a headless command-line tool that performs resource modifications on PE files.
-It is designed to be called programmatically by scripts, build tools, or the GUI.
+## 🌐 Global Conduits 
+- **YouTube:** [EliteSoftware Channel](https://www.youtube.com/channel/UCkCJHfNFwSAJ2fu4kXmEaUg)
+- **Main Portal:** [elitesoftwaretech.cc](https://MAIN.elitesoftwaretech.cc)
 
-**Syntax:**
-`ResourceAlchemyHacker_CLI.exe <action> <target_file> [type] [name] [lang] [file]`
+## 📡 Deployment Information
+This repository employs an automated CI/CD build chain via `build.ps1` and `Scripts/publish_release.ps1` to rapidly deploy Authenticode-signed releases directly to GitHub.
 
-**Actions:**
-- `/list`: Outputs a structured listing of all resources in `<target_file>`.
-  - Example: `ResourceAlchemyHacker_CLI.exe /list C:\app.exe`
-- `/extract`: Extracts a specific resource to an output file.
-  - Example: `ResourceAlchemyHacker_CLI.exe /extract C:\app.exe #14 #1 1033 out.ico`
-- `/replace`: Replaces an existing resource with data from `<file>`.
-  - Example: `ResourceAlchemyHacker_CLI.exe /replace C:\app.exe #14 #1 1033 new_icon.ico`
-- `/add`: Adds a new resource from `<file>`.
-  - Example: `ResourceAlchemyHacker_CLI.exe /add C:\app.exe #2 #100 1033 image.bmp`
-- `/delete`: Deletes a specific resource.
-  - Example: `ResourceAlchemyHacker_CLI.exe /delete C:\app.exe #2 #100 1033`
+### Local Development 
+1. Clone the repository.
+2. Execute `build.ps1` to compile the GUI, CLI, and Shell Extension components.
+3. Open `index.html` in any modern browser to view the static site representation.
 
-*Note: Types and Names can be strings (e.g. `ICON`) or integers prefixed with `#` (e.g. `#14` for RT_GROUP_ICON). Language should be a numeric LCID (e.g. 1033 for English-US).*
+--- 
+**Lead:** Zachary Whiteman 
+**Region:** Fingerlakes, NY   *"Density is efficiency."*
+ 
+ <!-- EliteSoftware Co. LOGO -->
 
-### 2. Shell Extension (`ResourceAlchemyHacker_ShellExt`)
-The Shell Extension integrates Resource Alchemy Hacker directly into Windows Explorer using a native C++ COM implementation.
-- **Context Menus:** Right-clicking any PE file (.exe, .dll, .sys, etc.) provides quick shortcuts to Extract All Resources or Open in Resource Alchemy Hacker.
-- **Property Sheet Tab:** Right-clicking a PE file and selecting "Properties" displays a new "Resources" tab.
-  - The tab lists resources in a graphical grid (similar to the Windows icon picker).
-  - Users can view and extract resources directly from the properties window without opening the full application.
+<div align="center"> <a href='https://i.postimg.cc/DZTjtNg1/Elite-Software-Company-Simulator-LOGO.png' target='_blank'><img src='https://i.postimg.cc/DZTjtNg1/Elite-Software-Company-Simulator-LOGO.png' border='0' alt='Elite-Software-Client' width="200"></a> </div>
 
-### Important Note on MUI and MUN Files
-Modern Windows (Vista and later) frequently uses Multilingual User Interface (MUI) files and MUN files (in `C:\Windows\SystemResources`) to store localized resources (like icons, strings, and dialogs) separate from the main binary.
-- When opening a system DLL (e.g. `imageres.dll`), the GUI will display resources dynamically loaded from its associated `.mui` or `.mun` file.
-- **Warning:** Saving modifications to the original `.dll` file using this tool **will only write to the `.dll`**. It will **not** modify the `.mui` or `.mun` file. Because of strict core Windows `UpdateResource` API limitations, attempting to modify an icon or resource on a "stub" DLL that forwards to an MUI/MUN file may fail with **Error 50 (ERROR_NOT_SUPPORTED)**.
-- **Solution:** To effectively modify system resources and avoid "Error 50", you must explicitly open and edit the actual `.mun` or `.mui` file directly (e.g., `C:\Windows\SystemResources\imageres.dll.mun`), rather than attempting to edit the base stub DLL.
+<div align="center">
 
-## Version
-Document Version: 1.3.1.0
+# **🏢 Resource Alchemy Hacker 🏢**
+
+</div>
+
+## **🚀 What It Is**
+Resource Alchemy Hacker is a specialized Win32 portable executable (PE) resource editor and extractor. It mirrors the classic Resource Hacker functionality but is engineered entirely in native C++ for extreme performance and compatibility on legacy systems (Windows Vista/7) up to Windows 11.
+
+## **📋 Scope**
+Outlines the core functions, limitations, and operational boundaries of manipulating embedded `RT_ICON`, `RT_STRING`, `RT_DIALOG`, and `RT_VERSION` blocks within Win32 PE binaries.
+
+## **📅 Plans**
+- UI refinements to align with classic WinForms high-density layout guidelines.
+- Dynamic registry-driven settings manager expansion.
+- Detailed operations logging enhancements.
+- Monolithic extractions and smart resource backing.
+
+## **🛠️ Development**
+Built in accordance with EliteSoftware GUI development guidelines.
+- **Technology Stack**: Native C++ Win32 API, MSBuild.
+- **Environment**: Standalone desktop executable (No .NET dependencies required).
+
+## **💻 How to Use**
+1. Run `ResourceAlchemyHacker_GUI.exe`.
+2. Load a PE executable (`.exe`, `.dll`, `.mun`).
+3. Navigate the resource tree to extract, replace, or delete internal resources.
+
+---
+### EliteSoftwareTech Co. - GUI Guidelines
+- **Authors**: Zachary Whiteman, Susan Gemm, TheShadyRainbow4, EliteSoftwareTech Co.
+- **Company**: EliteSoftware / EliteSoftwareTech Co.
+- **Document Version**: 1.2.0.0
+- **Target Framework**: Native C++ (WinForms / Legacy Win32 aesthetic)
+- **Minimum OS Target**: Windows Vista / Windows 7
+
+## **📜 A Note on "Vibe Coding"**
+
+This project was built in close collaboration with Google's Gemini. Many features, design choices, and lines of code were generated or heavily influenced by AI. The goal was less about perfect, clean code and more about exploring the creative potential of human-AI partnership. It's an experiment in letting the "vibe" of an idea guide the development process.
+
+Expect the unexpected. Embrace the chaos. And have fun!
+
+---
+
+## **🎨 Media Assets**
+
+<div align="center"> <a href='https://i.postimg.cc/DZTjtNg1/Elite-Software-Company-Simulator-LOGO.png' target='_blank'><img src='https://i.postimg.cc/DZTjtNg1/Elite-Software-Company-Simulator-LOGO.png' border='0' alt='Elite-Software-Client' width="250"></a> &nbsp;&nbsp;&nbsp;&nbsp; <a href='https://i.postimg.cc/85mKDbX8/Elite-Software-Company-Logo.png' target='_blank'><img src='https://i.postimg.cc/85mKDbX8/Elite-Software-Company-Logo.png' border='0' alt='Elite-Software-LOGO' width="250"></a> </div>
+
+---

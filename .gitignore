@@ -51,6 +51,8 @@ docs.html
 
 # PowerShell Build & Utility Scripts
 *.ps1
+!/build.ps1
+!/Scripts/*.ps1
 
 # Sensitive/Internal Assets
 *.pfx
@@ -61,3 +63,4 @@ docs.html
 *.rtf
 *.cpp
 *.old.cpp
+
