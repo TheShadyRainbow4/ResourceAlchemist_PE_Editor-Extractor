@@ -64,3 +64,9 @@ docs.html
 *.cpp
 *.old.cpp
 
+
+# Backport tools and installer dumps
+backport.md
+gen_backport.ps1
+setup.inf
+setup.rpt
