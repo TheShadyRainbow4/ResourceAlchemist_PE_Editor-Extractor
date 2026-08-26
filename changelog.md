@@ -39,3 +39,8 @@ This document provides a highly granular, step-by-step breakdown of planning, de
 - **Step 2:** Injected the generalized global rules into the core Antigravity configuration file at C:\Users\Administrator\.gemini\GEMINI.md.
 - **Step 3:** Synchronized the new global documentation rules across the primary system drives by appending them to C:\GEMINI.md and Z:\GEMINI.md, and initializing a new M:\GEMINI.md file.
 - **Step 4:** Synchronized the core EliteSoftware GUI Development Guidelines and legacy aesthetic rules from the global Antigravity configuration to C:\GEMINI.md and Z:\GEMINI.md to guarantee environment-wide policy parity.
+
+### Task: Standardize Universal Project Structure
+- **Step 1:** Scanned the C:\, Z:\, and M:\ drives to analyze the architectural layouts of existing EliteSoftware tools (Elite-Taskbar, IconExplorer, Local_APK_Store, ResourceAlchemyHacker, etc.).
+- **Step 2:** Synthesized the recurring patterns into a formalized <RULE[user_global_project_structure]> template, defining strict separation of GUI, CLI, and Shell components, alongside mandatory testing and release folders.
+- **Step 3:** Appended this new structural rule template to all global GEMINI.md configuration files (~/.gemini, C:\, Z:\, and M:\).
