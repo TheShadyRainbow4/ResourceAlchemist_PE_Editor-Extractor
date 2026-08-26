@@ -54,3 +54,10 @@ docs.html
 
 # Sensitive/Internal Assets
 *.pfx
+
+# Loose files and resources
+*.png
+*.pdf
+*.rtf
+*.cpp
+*.old.cpp
