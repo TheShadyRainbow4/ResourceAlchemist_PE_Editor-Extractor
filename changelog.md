@@ -59,3 +59,7 @@ This document provides a highly granular, step-by-step breakdown of planning, de
 ### Task: Automate Version Bump (1.4.0.6)
 - **Step 1:** Bumped ersion.h to 1.4.0.6 and synced WhatsNewDlgProc in main.cpp.
 - **Step 2:** Re-triggered master build/release pipeline for x64 and x86.
+
+### Task: Clean Up Git Repository
+- **Step 1:** Created a comprehensive .gitignore to exclude Visual Studio intermediate objects (*.obj, *.tlog, *.pdb, etc.), backup files (*.bak), and local build ZIPs, while explicitly retaining the compiled Release binary outputs for distribution.
+- **Step 2:** Refreshed the git cache to untrack the previously tracked intermediate files and pushed the cleaned repository state to remote.

@@ -1,0 +1,30 @@
+# Visual Studio / C++ Intermediate files
+*.obj
+*.iobj
+*.ipdb
+*.pdb
+*.tlog
+*.idb
+*.ilk
+*.res
+*.lastbuildstate
+*.recipe
+*.log
+*.FileListAbsolute.txt
+*.tlog/
+.vs/
+*.sln.docstates
+
+# Optional: Ignore backup files
+*.bak
+
+# Optional: Ignore ZIP and PDFs if they shouldn't be tracked
+*.zip
+
+# Ignore specific build directories inside sub-projects but DO NOT ignore the final output Release/ and x64/Release/ directories at the root level if we want to keep them.
+ResourceAlchemyHacker_CLI/Release/
+ResourceAlchemyHacker_CLI/x64/
+ResourceAlchemyHacker_GUI/Release/
+ResourceAlchemyHacker_GUI/x64/
+ResourceAlchemyHacker_ShellExt/Release/
+ResourceAlchemyHacker_ShellExt/x64/
