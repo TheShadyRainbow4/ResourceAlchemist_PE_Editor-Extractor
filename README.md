@@ -12,6 +12,7 @@ It serves as a modernized clone of Resource Hacker and includes three main compo
    - A property sheet tab for executable files that lists resources (e.g., icons) like the native icon picker, and allows on-the-fly replacement of resources in system files (using backup renaming strategies).
 
 ## Project Structure
+- [changelog.md](changelog.md) - Continuous granular development history
 - `/ResourceAlchemyHacker_CLI/` - Backend command line tool
 - `/ResourceAlchemyHacker_GUI/` - Main Win32 application
 - `/ResourceAlchemyHacker_ShellExt/` - COM Shell Extension (replaces old SharpShell implementation)

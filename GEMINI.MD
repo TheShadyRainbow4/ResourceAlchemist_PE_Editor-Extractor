@@ -266,3 +266,9 @@ powershell -ExecutionPolicy Bypass -File tests\run_e2e_tests.ps1
 ## Documentation Synchronization
 - **Rule:** The eadme.md file and index.html (the high-density landing page hosted via GitHub Pages) must always be kept in sync and updated together when adding new features or documentation.
 
+
+
+## Continuous Changelog
+- **Rule:** A `changelog.md` file must be continuously updated whenever things are changed or added to the project. This file must outline planning and development steps broken down into tiny, singular-focused lists of changes and the steps to complete them.
+- **Rule:** You must append to `changelog.md` immediately after every single file operation or task, rather than waiting until the end of the prompt. If you write to a CPP file, you must immediately document that and the specific changes implemented into `changelog.md` before continuing your work.
+- **Rule:** The `changelog.md` file must be linked inside `readme.md` and `index.html` so users can easily navigate to it.
