@@ -12,11 +12,7 @@ This file tracks specific instructions, workflow behaviors, and architectural ov
 - **Rule:** Ensure all source files use `CRLF` (Windows style) line endings.
 - **Reasoning:** Standardization across the Windows-based EliteSoftware ecosystem. Enforced via `.gitattributes`.
 
-### Continuous Changelog
-- **Rule:** A `changelog.md` file must be continuously updated whenever things are changed or added to the project.
-- **Reasoning:** Provides a human-readable, centralized history of new features, bug fixes, and architectural changes over time.
-
-### Elite App Marketplace Scope & Signatures
+#### Elite App Marketplace Scope & Signatures
 - **Rule (App Name):** The Android Client must strictly be named **"Elite App Marketplace"**.
 - **Rule (APK Signing):** All processed APKs, including the Elite App Marketplace APK itself, must be signed using the master certificate located at `C:\Users\Administrator\Desktop\Local_APK_Store\Elite-EasySigner\EliteSoftware_Special.pfx` (Password: `Minecraft145!!`).
 - **Rule (Client Features):** The marketplace client must support categorization, tagging, user reviews/comments, and the ability to download the `EliteSoftware_Special.cer` root certificate directly to the Android device via its internal Settings menu.
@@ -32,7 +28,7 @@ This is a monolithic C++ Win32 desktop application that acts as both a GUI manag
 - `main.cpp`: The core C++ source file containing the Win32 GUI event loop and the `httplib` web server endpoints. It handles uploading APKs, modifying database entries, and serving files to the Android app.
 - `db.json`: The database file holding all metadata (App Names, Package Names, Icons, Screenshots, Reviews) for every APK available in the marketplace.
 - `apks/` and `images/`: Directories storing the physical `.apk` files and their corresponding icons/screenshots.
-- `build.bat`: The primary build script for compiling the server and initiating the full pipeline (detailed below).
+- `b`build.bat``: The primary build script for compiling the server and initiating the full pipeline (detailed below).
 
 ### B. Android Client (`/Client_App/`)
 This is the standard Android Studio project for the "Elite App Marketplace" app. It connects to the C++ Windows Server.
@@ -47,13 +43,13 @@ This is the standard Android Studio project for the "Elite App Marketplace" app.
 The project features a **fully automated**, end-to-end continuous integration and deployment pipeline that spans building the C++ server, building the Android APK, signing it, updating the database, pushing to git, and creating a GitHub release.
 
 **How to trigger a full build & release:**
-You simply execute `build.bat` in the `Manager_App` directory.
+You simply execute `b`build.bat`` in the `Manager_App` directory.
 ```powershell
-cmd.exe /c "build.bat"
+cmd.exe /c "b`build.bat`"
 ```
 
 **Step-by-Step Breakdown of the Pipeline:**
-1. **`Manager_App\build.bat` (The Entry Point):**
+1. **`Manager_App\b`build.bat`` (The Entry Point):**
    - Kills any running instances of the server.
    - Cleans old binaries.
    - Compiles the C++ source using `g++` and `windres` (statically linked).
@@ -69,10 +65,10 @@ cmd.exe /c "build.bat"
    - **GitHub Release:** Uses the GitHub CLI (`gh release create`) to push a new versioned release, attaching both the Windows `Elite_App_Marketplace-Server.exe` and the `Elite_App_Marketplace-Client_v[version].apk`.
    - **Restart:** Automatically launches the newly compiled Windows Server Executable.
 
-**CRITICAL RULE:** Never separate the build and publish steps. `build.bat` must always remain the entry point, and it must always seamlessly trigger `publish_release.ps1` upon a successful compile.
+**CRITICAL RULE:** Never separate the build and publish steps. `b`build.bat`` must always remain the entry point, and it must always seamlessly trigger `publish_release.ps1` upon a successful compile.
 
 **Build Logging Details:**
-- `build.bat` uses a self-logging pattern to prevent it from hanging in the background and keeping the terminal process stuck. 
+- `b`build.bat`` uses a self-logging pattern to prevent it from hanging in the background and keeping the terminal process stuck. 
 - When executed, the outer script intercepts execution, creates a `build_log.txt` file (wiping the old one cleanly), pipes the entire compilation run into the log file, and immediately calls `exit` when finished to gracefully close the parent process. 
 
 ## 4. Android Client Self-Update Architecture
@@ -261,17 +257,8 @@ powershell -ExecutionPolicy Bypass -File tests\run_e2e_tests.ps1
 ## Version Updates & What's New Protocol
 - **Rule:** Whenever the version number is updated throughout the source files, the "Whats New" Dialog window (accessible via the menubar About section) must also be updated simultaneously.
 - **Rule:** The "Whats New" Dialog must retain the "Whats New" paragraphs for the last 3 versions.
-
-
 ## Documentation Synchronization
-- **Rule:** The eadme.md file and index.html (the high-density landing page hosted via GitHub Pages) must always be kept in sync and updated together when adding new features or documentation.
-
-
-
-## Continuous Changelog
-- **Rule:** A `changelog.md` file must be continuously updated whenever things are changed or added to the project. This file must outline planning and development steps broken down into tiny, singular-focused lists of changes and the steps to complete them.
-- **Rule:** You must append to `changelog.md` immediately after every single file operation or task, rather than waiting until the end of the prompt. If you write to a CPP file, you must immediately document that and the specific changes implemented into `changelog.md` before continuing your work.
-- **Rule:** The `changelog.md` file must be linked inside `readme.md` and `index.html` so users can easily navigate to it.
+- **Rule:** The `readme.md` file and index.html (the high-density landing page hosted via GitHub Pages) must always be kept in sync and updated together when adding new features or documentation.
 
 ## Prompt Output Logging
 - **Rule:** A dedicated folder named Prompt_Outputs must be maintained within the project.
@@ -280,3 +267,6 @@ powershell -ExecutionPolicy Bypass -File tests\run_e2e_tests.ps1
 
 ## Global Context Gathering
 - **Rule:** Before starting main tasks, the AI must reference the entire project for .md, .txt, or other documentation files to ensure complete situational awareness and adherence to previously established plans or architectures.
+
+
+
