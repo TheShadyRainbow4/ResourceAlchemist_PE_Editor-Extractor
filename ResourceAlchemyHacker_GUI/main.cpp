@@ -1348,6 +1348,10 @@ LRESULT CALLBACK WhatsNewDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             SendMessageW(hwnd, WM_SETICON, ICON_BIG, (LPARAM)g_hAppIconLarge);
 
             HWND hText = CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT",
+                L"What's New in v1.4.0.5:\r\n"
+                L"- Fixed signtool errors by removing unreachable timestamp servers.\r\n"
+                L"- Bugtracker populated with new issues.\r\n"
+                L"\r\n"
                 L"What's New in v1.4.0.4:\r\n"
                 L"- Packaged zipped releases into subdirectories (portable setup).\r\n"
                 L"- Add installer to packaged zipped releases.\r\n"
@@ -1358,11 +1362,7 @@ LRESULT CALLBACK WhatsNewDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
                 L"What's New in v1.4.0.3:\r\n"
                 L"- Fix UI scaling so TreeView properly cascades and fills space on start.\r\n"
                 L"- Hex-dump fallback in text viewer to prevent mojibake on binary items.\r\n"
-                L"- Removed unneeded manual layout jumps.\r\n"
-                L"\r\n"
-                L"What's New in v1.4.0.2:\r\n"
-                L"- Re-organized code structure for main window creation.\r\n"
-                L"- Minor bug fixes and typo corrections.\r\n",
+                L"- Removed unneeded manual layout jumps.\r\n",
                 WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_MULTILINE | ES_READONLY,
                 20, 80, 460, 250, hwnd, (HMENU)102, GetModuleHandleW(NULL), NULL);
 

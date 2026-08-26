@@ -1,11 +1,11 @@
 [Setup]
 AppName=Resource Alchemy Hacker
-AppVersion=1.4.0.4
+AppVersion=1.4.0.5
 AppPublisher=EliteSoftwareTech Co.
 DefaultDirName={commonpf}\EliteSoftware\Resource Alchemy Hacker
 DefaultGroupName=EliteSoftware\Resource Alchemy Hacker
 OutputDir=.
-OutputBaseFilename=ResourceAlchemyHacker_Installer_x64_1.4.0.4
+OutputBaseFilename=ResourceAlchemyHacker_Installer_x64_1.4.0.5
 Compression=lzma
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible

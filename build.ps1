@@ -23,14 +23,14 @@ $pfx = "C:\EliteSoftware PE TOOLS\Elite-EasySigner\EliteSoftware_Special.pfx"
 $pass = "Minecraft145!!"
 
 Write-Host "Signing executable binaries (x64)..."
-& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\x64\Release\ResourceAlchemyHacker_CLI.exe"
-& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\x64\Release\ResourceAlchemyHacker_GUI.exe"
-& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\x64\Release\ResourceAlchemyHacker_ShellExt.dll"
+& $signtool sign /f $pfx /p $pass /fd SHA256 /v ".\x64\Release\ResourceAlchemyHacker_CLI.exe"
+& $signtool sign /f $pfx /p $pass /fd SHA256 /v ".\x64\Release\ResourceAlchemyHacker_GUI.exe"
+& $signtool sign /f $pfx /p $pass /fd SHA256 /v ".\x64\Release\ResourceAlchemyHacker_ShellExt.dll"
 
 Write-Host "Signing executable binaries (x86)..."
-& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\Release\ResourceAlchemyHacker_CLI.exe"
-& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\Release\ResourceAlchemyHacker_GUI.exe"
-& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\Release\ResourceAlchemyHacker_ShellExt.dll"
+& $signtool sign /f $pfx /p $pass /fd SHA256 /v ".\Release\ResourceAlchemyHacker_CLI.exe"
+& $signtool sign /f $pfx /p $pass /fd SHA256 /v ".\Release\ResourceAlchemyHacker_GUI.exe"
+& $signtool sign /f $pfx /p $pass /fd SHA256 /v ".\Release\ResourceAlchemyHacker_ShellExt.dll"
 
 # Sync version numbers
 $appVersion = "1.4.0.0"
@@ -53,8 +53,8 @@ $issX86 | Set-Content "Installer\setup_x86.iss"
 & "S:\Projects\Inno Setup 6\iscc.exe" "Installer\setup_x86.iss"
 
 Write-Host "Signing Installers..."
-& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\Installer\ResourceAlchemyHacker_Installer_x64_$().exe"
-& $signtool sign /f $pfx /p $pass /fd SHA256 /t http://timestamp.digicert.com /v ".\Installer\ResourceAlchemyHacker_Installer_x86_$().exe"
+& $signtool sign /f $pfx /p $pass /fd SHA256 /v ".\Installer\ResourceAlchemyHacker_Installer_x64_$AppVersion.exe"
+& $signtool sign /f $pfx /p $pass /fd SHA256 /v ".\Installer\ResourceAlchemyHacker_Installer_x86_$AppVersion.exe"
 
 Write-Host "Invoking Release Publisher..."
 & .\publish_release.ps1 -AppVersion $appVersion
